@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--app-font-family);
+  --font-mono: var(--app-font-family);
+  --font-serif: var(--app-font-family);
+}
+
+@layer base {
+  :root {
+    --app-font-family: "Gulim", "굴림", Dotum, "돋움", sans-serif;
+    --app-font-size: 11px;
+  }
+  html {
+    font-size: var(--app-font-size);
+    font-family: var(--app-font-family) !important;
+  }
+  body {
+    font-family: var(--app-font-family) !important;
+    font-size: 1rem;
+    line-height: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply text-slate-900;
+  }
+  
+  /* Force absolute font-family uniformity across all system elements, including tables, form elements, tooltips, and SVG charts (text/tspan) */
+  *, *::before, *::after, 
+  input, button, select, textarea, 
+  table, th, td, 
+  pre, code, 
+  svg, text, tspan {
+    font-family: var(--app-font-family) !important;
+  }
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 8mm;
+  }
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: #ffffff !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+}
