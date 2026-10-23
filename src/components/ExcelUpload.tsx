@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Upload, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { SpecItem } from '../types';
-import { HierarchicalSectionTracker, normalizeAllItemsSections } from '../utils/sectionHierarchy';
+import { HierarchicalSectionTracker, normalizeAllItemsSections, extractProcessCode } from '../utils/sectionHierarchy';
 
 interface Props {
   onDataLoaded: (items: SpecItem[], workbook: XLSX.WorkBook) => void;
@@ -415,6 +415,18 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
         let currentSection = '기본 내역';
         let currentParents: string[] = [];
         const sectionTracker = new HierarchicalSectionTracker();
+
+        // 다른 시트(집계표 등)에 있는 "코드  공종명" 목록으로 공식 공종명 등록
+        const seed: { code: string; name: string }[] = [];
+        wb.SheetNames.forEach(sn => {
+          if (sn === wsname) return;
+          const rowsOfSheet = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: false, defval: '' }) as any[][];
+          rowsOfSheet.forEach(r => (r || []).forEach(cell => {
+            const m = String(cell || '').trim().match(/^(\d{6}|\d{8}|\d{10})\s+(\S.*)$/);
+            if (m) seed.push({ code: m[1], name: m[2].trim() });
+          }));
+        });
+        if (seed.length > 0) sectionTracker.seedNames(seed);
         const items: SpecItem[] = [];
 
         // Determine actual data start index
@@ -641,7 +653,7 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
                 }
               }
 
-              currentSection = sectionTracker.handleHeaderRow(headerText);
+              currentSection = sectionTracker.handleHeaderRow(headerText, spec);
               currentParents = sectionTracker.getLastParents();
               return;
             }
@@ -787,7 +799,8 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
             let itemParents = currentParents;
             if (sectionColIdx !== -1) {
               const explicitSection = String(row[sectionColIdx] || '').trim();
-              if (explicitSection && explicitSection !== 'null' && explicitSection !== 'undefined') {
+              // '세부공종' 처럼 자재 구분값이 들어있는 칸은 공정이 아니므로, 공정코드가 있는 값만 공정으로 사용
+              if (explicitSection && explicitSection !== 'null' && explicitSection !== 'undefined' && extractProcessCode(explicitSection)) {
                 itemSection = sectionTracker.handleHeaderRow(explicitSection);
                 itemParents = sectionTracker.getLastParents();
               }

@@ -344,6 +344,32 @@ export class HierarchicalSectionTracker {
 
   private dynamicL1Map: Record<string, string> = { ...LEVEL_1_PROCESS_NAMES };
 
+  // 집계표 등에서 읽은 공식 공종명 (규격 칸 힌트보다 우선)
+  private seededL1 = new Set<string>();
+  private seededL2 = new Set<string>();
+  private seededL3: Record<string, string> = {};
+
+  /**
+   * 내역서 파일의 집계표/공종별 집계 시트에서 찾은 "코드  공종명" 목록으로 대·소공종 이름을 미리 등록
+   * (내역 시트에 대공종 머리줄이 없어도 정확한 이름이 나오도록)
+   */
+  public seedNames(entries: { code: string; name: string }[]) {
+    const sorted = [...entries].sort((a, b) => a.code.length - b.code.length);
+    sorted.forEach(({ code, name }) => {
+      if (!name) return;
+      if (code.length === 6) {
+        this.dynamicL1Map[code] = name;
+        this.seededL1.add(code);
+      } else if (code.length === 8) {
+        const l1Name = this.dynamicL1Map[code.slice(0, 6)] || '';
+        this.dynamicL2Map[code] = { name, combined: combineParentProcessNames(l1Name, name) };
+        this.seededL2.add(code);
+      } else if (code.length === 10) {
+        this.seededL3[code] = name;
+      }
+    });
+  }
+
   /** 직전 handleHeaderRow 로 정해진 공정의 상위 경로 */
   public getLastParents(): string[] {
     return [...this.lastParents];
@@ -368,8 +394,11 @@ export class HierarchicalSectionTracker {
    * Process a potential header row from Excel.
    * Returns the normalized section name to assign to items, or null if it's not a section header.
    */
-  public handleHeaderRow(rawText: string): string {
+  public handleHeaderRow(rawText: string, parentHint?: string): string {
     const text = (rawText || '').trim();
+    // 공정 머리줄의 규격 칸에 적힌 상위 공종명 (예: 0101040101 행의 "난방배관공사", 01010301 행의 "기계실공사")
+    const hint = (parentHint || '').trim();
+    const validHint = hint.length >= 2 && !/^[\d.,\s-]+$/.test(hint) ? hint : '';
     if (!text) {
       this.lastParents = [];
       return '기본 내역';
@@ -404,7 +433,10 @@ export class HierarchicalSectionTracker {
 
       // Ensure Level 1 is set
       const l1Code = code.slice(0, 6);
-      if (!this.currentL1Code || this.currentL1Code !== l1Code) {
+      if (validHint && !this.seededL1.has(l1Code)) {
+        this.dynamicL1Map[l1Code] = validHint;
+      }
+      if (!this.currentL1Code || this.currentL1Code !== l1Code || validHint || !this.currentL1Name) {
         this.currentL1Code = l1Code;
         this.currentL1Name = this.dynamicL1Map[l1Code] || LEVEL_1_PROCESS_NAMES[l1Code] || '';
       }
@@ -424,6 +456,14 @@ export class HierarchicalSectionTracker {
       // Level 3 Header (e.g. 0101040101 59㎡ 단위세대, 0101040102 76㎡ 단위세대)
       const l2Code = code.slice(0, 8);
       const l1Code = code.slice(0, 6);
+
+      if (validHint && !this.seededL2.has(l2Code)) {
+        const l1Name = this.currentL1Code === l1Code && this.currentL1Name
+          ? this.currentL1Name
+          : (this.dynamicL1Map[l1Code] || '');
+        this.dynamicL2Map[l2Code] = { name: validHint, combined: combineParentProcessNames(l1Name, validHint) };
+        this.currentL2Code = ''; // 아래에서 새 이름으로 다시 읽도록
+      }
 
       if (!this.currentL2Code || this.currentL2Code !== l2Code) {
         this.currentL2Code = l2Code;
@@ -452,8 +492,8 @@ export class HierarchicalSectionTracker {
         else if (l2Code === '01010201') this.currentCombinedParent = '옥외 급수급탕 배관공사';
       }
 
-      // Clean rest from any already present parent name
-      const cleanRest = stripParentFromRest(rest, this.currentCombinedParent, this.currentL2Name, this.currentL1Name);
+      // Clean rest from any already present parent name (집계표에 세부공종명이 있으면 그 이름 그대로 사용)
+      const cleanRest = this.seededL3[code] || stripParentFromRest(rest, this.currentCombinedParent, this.currentL2Name, this.currentL1Name);
 
       if (this.currentL1Code !== l1Code) {
         this.currentL1Code = l1Code;
@@ -499,6 +539,18 @@ export function normalizeAllItemsSections(items: SpecItem[]): { items: SpecItem[
   const l1Map: Record<string, string> = { ...LEVEL_1_PROCESS_NAMES };
   const l2Map: Record<string, { name: string; combined: string }> = { ...LEVEL_2_PROCESS_NAMES };
 
+  // 업로드 때 기록된 상위 경로(sectionParent)에 있는 실제 공종명을 먼저 등록
+  const parentPieces = items.flatMap(item => (item.sectionParent ? item.sectionParent.split(' › ') : []))
+    .map(p => extractProcessCode(p))
+    .filter((p): p is { code: string; rest: string } => !!p && !!p.rest)
+    .sort((a, b) => a.code.length - b.code.length);
+  parentPieces.forEach(({ code, rest }) => {
+    if (code.length === 6) l1Map[code] = rest;
+    else if (code.length === 8) {
+      l2Map[code] = { name: rest, combined: combineParentProcessNames(l1Map[code.slice(0, 6)] || '', rest) };
+    }
+  });
+
   items.forEach(item => {
     if (!item.section) return;
     const parsed = extractProcessCode(item.section);
@@ -519,6 +571,8 @@ export function normalizeAllItemsSections(items: SpecItem[]): { items: SpecItem[
   // Pass 2: Format all item sections
   let updatedCount = 0;
   const updatedItems = items.map(item => {
+    // 업로드 때 내역서 기준으로 이미 정리된 품목은 그대로 둠
+    if (item.sectionParent !== undefined) return item;
     const originalSection = item.section || '기본 내역';
     const formatted = formatSectionWithHierarchy(originalSection, { l1Map, l2Map });
 
@@ -709,8 +763,10 @@ export function buildSectionDisplayInfo(items: SpecItem[]): Map<string, SectionD
       // 업로드 때 붙은 "세대내 난방 배관공사" 같은 상위 공정명은 제목에서 제거 (상위 경로에 이미 표시되므로)
       const dynamicCombined = combineParentProcessNames(n1, n2);
       const staticCombined = LEVEL_2_PROCESS_NAMES[c2]?.combined || '';
-      let cleanRest = stripParentFromRest(parsed.rest, dynamicCombined, n2, n1);
-      if (staticCombined) cleanRest = stripParentFromRest(cleanRest, staticCombined);
+      let cleanRest = item.sectionParent !== undefined
+        ? stripParentFromRest(parsed.rest, dynamicCombined)
+        : stripParentFromRest(parsed.rest, dynamicCombined, n2, n1);
+      if (staticCombined && item.sectionParent === undefined) cleanRest = stripParentFromRest(cleanRest, staticCombined);
       title = `${parsed.code}  ${cleanRest || parsed.rest}`.trim();
     }
 

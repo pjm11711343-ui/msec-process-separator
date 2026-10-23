@@ -43,7 +43,10 @@ export function healItem(item: SpecItem): SpecItem {
   if ((!amt || amt === 0) && prc && prc > 0 && q > 0) {
     amt = Math.round(prc * q);
   }
-  const formattedSection = item.section ? formatSectionWithHierarchy(item.section) : item.section;
+  // 업로드 때 내역서의 실제 공종명으로 정리된 품목(sectionParent 있음)은 다시 정리하지 않음 (기본 공종표로 덮어쓰지 않도록)
+  const formattedSection = item.section && item.sectionParent === undefined
+    ? formatSectionWithHierarchy(item.section)
+    : item.section;
   return {
     ...item,
     quantity: q,
