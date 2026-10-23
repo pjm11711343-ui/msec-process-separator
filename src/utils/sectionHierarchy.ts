@@ -348,6 +348,8 @@ export class HierarchicalSectionTracker {
   private seededL1 = new Set<string>();
   private seededL2 = new Set<string>();
   private seededL3: Record<string, string> = {};
+  private seededCodes = new Set<string>();
+  private seededByName = new Map<string, string>(); // "자릿수|공백제거 이름" → 집계표 코드
 
   /**
    * 내역서 파일의 집계표/공종별 집계 시트에서 찾은 "코드  공종명" 목록으로 대·소공종 이름을 미리 등록
@@ -357,6 +359,9 @@ export class HierarchicalSectionTracker {
     const sorted = [...entries].sort((a, b) => a.code.length - b.code.length);
     sorted.forEach(({ code, name }) => {
       if (!name) return;
+      this.seededCodes.add(code);
+      const nameKey = `${code.length}|${name.replace(/\s+/g, '')}`;
+      if (!this.seededByName.has(nameKey)) this.seededByName.set(nameKey, code);
       if (code.length === 6) {
         this.dynamicL1Map[code] = name;
         this.seededL1.add(code);
@@ -411,7 +416,14 @@ export class HierarchicalSectionTracker {
       return text;
     }
 
-    const { code, rest } = parsed;
+    let { code, rest } = parsed;
+
+    // 내역 시트의 코드가 집계표에 없는데, 같은 이름이 집계표에 다른 코드로 있으면 집계표 코드로 바로잡음
+    // (예: 내역 "01010101 근생전열교환기설치공사" → 집계표 "01010703 근생전열교환기설치공사")
+    if (this.seededCodes.size > 0 && !this.seededCodes.has(code) && rest) {
+      const fixed = this.seededByName.get(`${code.length}|${rest.replace(/\s+/g, '')}`);
+      if (fixed) code = fixed;
+    }
 
     if (code.length === 6) {
       // Level 1 Header (e.g. 010104 세대내배관공사)
