@@ -9,7 +9,7 @@ import { autoClassify } from './utils/classifier';
 import { exportStyledExcel } from './utils/excelExport';
 import { healItem } from './utils/costCalculation';
 import { recordRuleExecutionFeedback } from './utils/patternAnalytics';
-import { normalizeAllItemsSections, formatSectionWithHierarchy } from './utils/sectionHierarchy';
+import { normalizeAllItemsSections, formatSectionWithHierarchy, buildSectionDisplayInfo } from './utils/sectionHierarchy';
 import TemplateSelector from './components/TemplateSelector';
 import Dashboard from './components/Dashboard';
 import SectionSummaryCards from './components/SectionSummaryCards';
@@ -469,8 +469,12 @@ export default function App() {
     checkLockAndProceed(() => {
       let changedCount = 0;
       setItems(prevItems => {
+        const sectionInfo = buildSectionDisplayInfo(prevItems);
         return prevItems.map(item => {
-          const { category: newCategory, remark } = autoClassify(item, updatedRules);
+          const withParent = item.sectionParent !== undefined
+            ? item
+            : { ...item, sectionParent: sectionInfo.get(item.id)?.parents.join(' › ') || '' };
+          const { category: newCategory, remark } = autoClassify(withParent, updatedRules);
           const finalCategory = newCategory || item.category;
           if (finalCategory !== item.category) {
             changedCount++;
@@ -1578,6 +1582,7 @@ export default function App() {
     checkLockAndProceed(async () => {
       const targetIdSet = targetIds && targetIds.length > 0 ? new Set(targetIds) : null;
       const targetItems = targetIdSet ? items.filter(it => targetIdSet.has(it.id)) : items;
+      const sectionInfoForClassify = buildSectionDisplayInfo(items);
       if (targetItems.length === 0) {
         showNotification('분류할 품목이 없습니다.', 'info');
         return;
@@ -1613,6 +1618,7 @@ export default function App() {
                     name: bi.name, 
                     specification: bi.specification,
                     section: bi.section,
+                    sectionParent: bi.sectionParent ?? sectionInfoForClassify.get(bi.id)?.parents.join(' › ') ?? '',
                     materialUnitPrice: bi.materialUnitPrice,
                     laborUnitPrice: bi.laborUnitPrice,
                     remark: bi.remark

@@ -413,6 +413,7 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
         const finalAmountIdx = totalAmountIdx;
 
         let currentSection = '기본 내역';
+        let currentParents: string[] = [];
         const sectionTracker = new HierarchicalSectionTracker();
         const items: SpecItem[] = [];
 
@@ -641,6 +642,7 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
               }
 
               currentSection = sectionTracker.handleHeaderRow(headerText);
+              currentParents = sectionTracker.getLastParents();
               return;
             }
           }
@@ -782,10 +784,12 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
             }
 
             let itemSection = currentSection;
+            let itemParents = currentParents;
             if (sectionColIdx !== -1) {
               const explicitSection = String(row[sectionColIdx] || '').trim();
               if (explicitSection && explicitSection !== 'null' && explicitSection !== 'undefined') {
                 itemSection = sectionTracker.handleHeaderRow(explicitSection);
+                itemParents = sectionTracker.getLastParents();
               }
             }
 
@@ -804,7 +808,8 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
               category: autoCategory,
               section: itemSection,
               remark: (remark === 'null' || remark === 'undefined') ? '' : remark,
-              excelRowIdx: actualDataStartIndex + idx
+              excelRowIdx: actualDataStartIndex + idx,
+              sectionParent: itemParents.join(' › ')
             });
           }
         });

@@ -174,7 +174,8 @@ function serializeItems(items: SpecItem[]): { items?: any[]; itemsCompressed?: s
       originalCategory: item.originalCategory || item.category || '미분류',
       excelRowIdx: typeof item.excelRowIdx === 'number' ? item.excelRowIdx : null,
       memo: item.memo || '',
-      executionAmount: typeof item.executionAmount === 'number' ? item.executionAmount : 0
+      executionAmount: typeof item.executionAmount === 'number' ? item.executionAmount : 0,
+      ...(typeof item.sectionParent === 'string' ? { sectionParent: item.sectionParent } : {})
     };
   });
 
@@ -231,7 +232,8 @@ function deserializeItems(data: any): SpecItem[] {
       originalCategory: item.originalCategory || item.category,
       excelRowIdx: typeof item.excelRowIdx === 'number' ? item.excelRowIdx : undefined,
       memo: item.memo || '',
-      executionAmount: Number(item.executionAmount) || 0
+      executionAmount: Number(item.executionAmount) || 0,
+      ...(typeof item.sectionParent === 'string' ? { sectionParent: item.sectionParent } : {})
     };
   });
 }

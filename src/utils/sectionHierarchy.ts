@@ -209,7 +209,9 @@ export function extractProcessCode(text: string): { code: string; rest: string }
   // Clean formatted codes like 01.01.04.01.02 -> 0101040102 or [0101040101] -> 0101040101
   const cleaned = trimmed
     .replace(/^\[?(\d{2})[.-](\d{2})[.-](\d{2})[.-](\d{2})[.-](\d{2})\]?/, '$1$2$3$4$5')
-    .replace(/^[\[(](\d{6,10})[\])]\s*/, '$1 ');
+    .replace(/^[\[(](\d{6,10})[\])]\s*/, '$1 ')
+    // 코드와 평형이 붙어버린 경우 분리: "010104010159  ㎡단위세대" → "0101040101  59㎡단위세대"
+    .replace(/^(\d{10})(\d{1,3})\s*(㎡|m²|m2|평|형|타입)/i, '$1  $2$3');
 
   // 1. If text contains a 10-digit code anywhere (e.g. 0101040101)
   const match10 = cleaned.match(/(?:^|[\[(\s>_-])(\d{10})(?:[\])\s._-]+(.*))?$/);
@@ -336,7 +338,30 @@ export class HierarchicalSectionTracker {
   private currentL2Name = '';
   private currentCombinedParent = '';
 
+  // 상위 공정 경로 추적 (화면/엑셀의 "대공종 › 소공종" 표시용)
+  private codedPath: string[] = [];
+  private lastParents: string[] = [];
+
   private dynamicL1Map: Record<string, string> = { ...LEVEL_1_PROCESS_NAMES };
+
+  /** 직전 handleHeaderRow 로 정해진 공정의 상위 경로 */
+  public getLastParents(): string[] {
+    return [...this.lastParents];
+  }
+
+  private l1Label(l1Code: string): string {
+    const name = this.currentL1Code === l1Code && this.currentL1Name
+      ? this.currentL1Name
+      : (this.dynamicL1Map[l1Code] || '');
+    return name ? `${l1Code}  ${name}` : l1Code;
+  }
+
+  private l2Label(l2Code: string): string {
+    const name = this.currentL2Code === l2Code && this.currentL2Name
+      ? this.currentL2Name
+      : (this.dynamicL2Map[l2Code]?.name || '');
+    return name ? `${l2Code}  ${name}` : l2Code;
+  }
   private dynamicL2Map: Record<string, { name: string; combined: string }> = { ...LEVEL_2_PROCESS_NAMES };
 
   /**
@@ -345,11 +370,15 @@ export class HierarchicalSectionTracker {
    */
   public handleHeaderRow(rawText: string): string {
     const text = (rawText || '').trim();
-    if (!text) return '기본 내역';
+    if (!text) {
+      this.lastParents = [];
+      return '기본 내역';
+    }
 
     const parsed = extractProcessCode(text);
     if (!parsed) {
-      // Non-coded section header (e.g. "■ 옥외배관공사")
+      // 코드 없는 하위 공정 ("1. 시스템자재", "(연간단가)수전류" 등) → 직전 코드 공정 아래에 소속
+      this.lastParents = [...this.codedPath];
       return text;
     }
 
@@ -363,6 +392,8 @@ export class HierarchicalSectionTracker {
       this.currentL2Code = '';
       this.currentL2Name = '';
       this.currentCombinedParent = '';
+      this.lastParents = [];
+      this.codedPath = [`${code}  ${rest}`];
       return `${code}  ${rest}`;
     }
 
@@ -384,6 +415,8 @@ export class HierarchicalSectionTracker {
         combined: this.currentCombinedParent
       };
 
+      this.lastParents = [this.l1Label(l1Code)];
+      this.codedPath = [...this.lastParents, `${code}  ${rest}`];
       return `${code}  ${rest}`;
     }
 
@@ -422,6 +455,13 @@ export class HierarchicalSectionTracker {
       // Clean rest from any already present parent name
       const cleanRest = stripParentFromRest(rest, this.currentCombinedParent, this.currentL2Name, this.currentL1Name);
 
+      if (this.currentL1Code !== l1Code) {
+        this.currentL1Code = l1Code;
+        this.currentL1Name = this.dynamicL1Map[l1Code] || '';
+      }
+      this.lastParents = [this.l1Label(l1Code), this.l2Label(l2Code)];
+      this.codedPath = [...this.lastParents, `${code}  ${cleanRest || rest}`];
+
       // Consistently return with the combined parent process name
       if (this.currentCombinedParent) {
         return `${code}  ${this.currentCombinedParent}${cleanRest ? ` ${cleanRest}` : ''}`;
@@ -429,6 +469,8 @@ export class HierarchicalSectionTracker {
       return `${code}  ${cleanRest}`;
     }
 
+    this.lastParents = [];
+    this.codedPath = [`${code}  ${rest}`];
     return `${code}  ${rest}`;
   }
 
@@ -596,4 +638,86 @@ export function getSectionHierarchyAncestors(
   }
 
   return null;
+}
+
+export interface SectionDisplayInfo {
+  /** 상위 공정 경로 (예: ["010104  세대내배관공사", "01010401  난방배관공사"]) */
+  parents: string[];
+  /** 공정 제목 (예: "0101040101  59㎡ 단위세대") */
+  title: string;
+  /** 같은 공정명이라도 상위 공정이 다르면 다른 그룹이 되도록 하는 키 */
+  key: string;
+}
+
+/**
+ * 모든 품목의 "상위 공정 경로 + 공정 제목"을 계산합니다. (key: item.id)
+ * - 업로드 때 기록된 sectionParent 가 있으면 그대로 사용 (내역서의 실제 대공종/소공종 명칭)
+ * - 예전 데이터는 코드(6/8/10자리)와 품목 순서로 추정: 코드 없는 하위 공정("1. 시스템자재" 등)은 바로 앞 코드 공정 아래로 소속
+ */
+export function buildSectionDisplayInfo(items: SpecItem[]): Map<string, SectionDisplayInfo> {
+  const result = new Map<string, SectionDisplayInfo>();
+  if (!items || items.length === 0) return result;
+
+  // 1. 이 현장 데이터에 실제로 있는 대/소공종 명칭 수집
+  const l1Names: Record<string, string> = {};
+  const l2Names: Record<string, string> = {};
+  const collect = (text: string) => {
+    const parsed = extractProcessCode(text);
+    if (!parsed || !parsed.rest) return;
+    if (parsed.code.length === 6) l1Names[parsed.code] = parsed.rest;
+    else if (parsed.code.length === 8) l2Names[parsed.code] = parsed.rest;
+  };
+  items.forEach(item => {
+    if (item.section) collect(item.section);
+    if (item.sectionParent) item.sectionParent.split(' › ').forEach(collect);
+  });
+
+  const l1Name = (c: string) => l1Names[c] || LEVEL_1_PROCESS_NAMES[c] || '';
+  const l2Name = (c: string) => l2Names[c] || LEVEL_2_PROCESS_NAMES[c]?.name || '';
+  const label = (c: string, name: string) => (name ? `${c}  ${name}` : c);
+
+  // 2. 품목 순서대로 경로 계산
+  let codedPath: string[] = [];
+  items.forEach(item => {
+    const section = item.section || '기본 내역';
+    const parsed = extractProcessCode(section);
+    let parents: string[];
+
+    if (typeof item.sectionParent === 'string') {
+      parents = item.sectionParent ? item.sectionParent.split(' › ').map(p => p.trim()).filter(Boolean) : [];
+    } else if (parsed && parsed.code.length === 6) {
+      parents = [];
+    } else if (parsed && parsed.code.length === 8) {
+      const c1 = parsed.code.slice(0, 6);
+      parents = [label(c1, l1Name(c1))];
+    } else if (parsed && parsed.code.length === 10) {
+      const c1 = parsed.code.slice(0, 6);
+      const c2 = parsed.code.slice(0, 8);
+      parents = [label(c1, l1Name(c1)), label(c2, l2Name(c2))];
+    } else if (item.id === 'manual-safety-item') {
+      parents = [];
+    } else {
+      parents = [...codedPath];
+    }
+
+    let title = section;
+    if (parsed && parsed.code.length === 10) {
+      const c1 = parsed.code.slice(0, 6);
+      const c2 = parsed.code.slice(0, 8);
+      const n1 = l1Name(c1);
+      const n2 = l2Name(c2);
+      // 업로드 때 붙은 "세대내 난방 배관공사" 같은 상위 공정명은 제목에서 제거 (상위 경로에 이미 표시되므로)
+      const dynamicCombined = combineParentProcessNames(n1, n2);
+      const staticCombined = LEVEL_2_PROCESS_NAMES[c2]?.combined || '';
+      let cleanRest = stripParentFromRest(parsed.rest, dynamicCombined, n2, n1);
+      if (staticCombined) cleanRest = stripParentFromRest(cleanRest, staticCombined);
+      title = `${parsed.code}  ${cleanRest || parsed.rest}`.trim();
+    }
+
+    if (parsed) codedPath = [...parents, title];
+
+    result.set(item.id, { parents, title, key: `${parents.join(' › ')} § ${section}` });
+  });
+
+  return result;
 }

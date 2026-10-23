@@ -18,6 +18,7 @@ export interface SpecItem {
   memo?: string;       // 메모
   executionAmount?: number; // 수기 실행금액
   recommendationSource?: 'ai' | 'history' | 'rule' | 'manual'; // 분류 근거
+  sectionParent?: string; // 상위 공정 경로 (예: "010104  세대내배관공사 › 01010401  난방배관공사") — 업로드 시 기록
 }
 
 export interface Project {

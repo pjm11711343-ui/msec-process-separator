@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { SpecItem, ThemeType } from '../types';
 import { Download, Table, Cpu, Filter, Maximize2, RotateCcw, Zap, Sparkles, AlertTriangle, User, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Layers, X, Search, History } from 'lucide-react';
 import ExcelUpload from './ExcelUpload';
+import { buildSectionDisplayInfo } from '../utils/sectionHierarchy';
 import * as XLSX from 'xlsx';
 import { exportStyledExcel } from '../utils/excelExport';
 import { VirtualizedTableBody, VirtualRowData } from './VirtualizedTableBody';
@@ -365,6 +366,9 @@ export default function DataTable({
     return items.filter(item => !item.category || item.category === '미분류').length;
   }, [items]);
 
+  // 전체 품목 기준 상위 공정 경로 (필터와 무관하게 동일한 경로가 나오도록 items 전체로 계산)
+  const sectionDisplayInfo = useMemo(() => buildSectionDisplayInfo(items), [items]);
+
   // Transform filtered and paginated/all items into flat VirtualRowData[] for virtualized rendering
   const virtualRows = useMemo<VirtualRowData[]>(() => {
     const targetItems = pageItems;
@@ -450,15 +454,22 @@ export default function DataTable({
         }
       });
     } else {
-      // Process / Unclassified View
+      // Process / Unclassified View — 상위 공정 경로까지 같은 품목끼리 묶음 (같은 이름의 하위공정도 상위가 다르면 분리)
       const itemsBySection: Record<string, SpecItem[]> = {};
+      const groupInfo: Record<string, { parents: string[]; title: string }> = {};
       targetItems.forEach(item => {
         const sec = item.section || '기본 내역';
-        if (!itemsBySection[sec]) itemsBySection[sec] = [];
-        itemsBySection[sec].push(item);
+        const info = sectionDisplayInfo.get(item.id);
+        const key = info?.key || sec;
+        if (!itemsBySection[key]) {
+          itemsBySection[key] = [];
+          groupInfo[key] = { parents: info?.parents || [], title: info?.title || sec };
+        }
+        itemsBySection[key].push(item);
       });
 
-      Object.entries(itemsBySection).forEach(([sectionName, sectionItems], index) => {
+      Object.entries(itemsBySection).forEach(([groupKey, sectionItems], index) => {
+        const sectionName = sectionItems[0]?.section || '기본 내역';
         const secMaterialTotal = sectionItems.reduce((sum, i) => sum + getItemMaterialCost(i), 0);
         const secLaborTotal = sectionItems.reduce((sum, i) => sum + getItemLaborCost(i), 0);
         const secTotal = sectionItems.reduce((sum, i) => sum + getItemContractAmount(i), 0);
@@ -466,6 +477,8 @@ export default function DataTable({
         rows.push({
           type: 'section-header',
           sectionName,
+          parents: groupInfo[groupKey].parents,
+          title: groupInfo[groupKey].title,
           index,
           materialTotal: secMaterialTotal,
           laborTotal: secLaborTotal,
@@ -486,7 +499,7 @@ export default function DataTable({
     }
 
     return rows;
-  }, [pageItems, viewMode, categories, showAggregated]);
+  }, [pageItems, viewMode, categories, showAggregated, sectionDisplayInfo]);
 
   const themeStyles = {
     industrial: {

@@ -3,10 +3,9 @@ import { List } from 'react-window';
 import { SpecItem, ThemeType } from '../types';
 import { RotateCcw } from 'lucide-react';
 import { getItemQuantity } from '../utils/costCalculation';
-import { getSectionHierarchyAncestors } from '../utils/sectionHierarchy';
 
 export type VirtualRowData = 
-  | { type: 'section-header'; sectionName: string; index: number; materialTotal: number; laborTotal: number; total: number; count: number; items: SpecItem[] }
+  | { type: 'section-header'; sectionName: string; parents?: string[]; title?: string; index: number; materialTotal: number; laborTotal: number; total: number; count: number; items: SpecItem[] }
   | { type: 'category-header'; catName: string; catIdx: number; materialTotal: number; laborTotal: number; total: number; count: number; items: SpecItem[] }
   | { type: 'category-sub-header'; secName: string; count: number }
   | { type: 'item'; item: SpecItem; itemIdx: number; isAggregated?: boolean };
@@ -163,7 +162,8 @@ const TableRowInner = (props: {
   }
 
   if (row.type === 'section-header') {
-    const ancestors = getSectionHierarchyAncestors(row.sectionName);
+    const parents = row.parents || [];
+    const title = row.title || row.sectionName;
     return (
       <div 
         style={style} 
@@ -184,14 +184,14 @@ const TableRowInner = (props: {
           P{row.index + 1}
         </div>
         <div className="w-[556px] shrink-0 flex flex-col justify-center px-3 overflow-hidden py-1">
-          {ancestors?.breadcrumb ? (
+          {parents.length > 0 ? (
             <div className="text-[10px] font-semibold text-sky-100/90 tracking-wide flex items-center gap-1.5 truncate leading-tight mb-0.5">
               <span className="opacity-80">📁</span>
-              <span className="bg-sky-700/60 px-1.5 py-0.5 rounded text-[9.5px] border border-sky-400/30 font-mono font-medium">{ancestors.breadcrumb}</span>
+              <span className="bg-sky-700/60 px-1.5 py-0.5 rounded text-[9.5px] border border-sky-400/30 font-mono font-medium whitespace-pre">{parents.join('  ›  ')}</span>
             </div>
           ) : null}
-          <div className="text-xs font-black uppercase tracking-wider text-white truncate leading-tight" title={row.sectionName}>
-            {row.sectionName}
+          <div className="text-xs font-black uppercase tracking-wider text-white truncate leading-tight whitespace-pre" title={[...parents, row.sectionName].join(' › ')}>
+            {title}
           </div>
         </div>
         <div className={`w-[182px] shrink-0 text-right font-mono font-bold px-2 text-sky-100 text-xs ${costViewType === 'material' ? 'bg-blue-600/40' : ''}`}>

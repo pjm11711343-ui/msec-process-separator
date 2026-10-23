@@ -198,7 +198,9 @@ export function autoClassify(
   const normNameForTemp = name.replace(/\s+/g, '');
   const normSpecForTemp = spec.replace(/\s+/g, '');
   
-  const has0101InDigits = section ? section.split(/[^0-9]/).some(part => part.startsWith('0101')) : true;
+  // 코드 없는 하위 공정("1. 시스템자재" 등)은 상위 공정 경로의 코드로 판단
+  const sectionWithParents = `${item.sectionParent || ''} ${section}`.trim();
+  const has0101InDigits = sectionWithParents ? sectionWithParents.split(/[^0-9]/).some(part => part.startsWith('0101')) : true;
   
   const isTemporaryWorkName = normNameForTemp.includes('옥내공사용수배관설치비') ||
                               normNameForTemp.includes('가설소화호스함') ||

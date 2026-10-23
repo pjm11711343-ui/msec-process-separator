@@ -9,7 +9,7 @@ import {
   isIndirectCostCategory,
   isClientSuppliedCategory
 } from './costCalculation';
-import { extractProcessCode, LEVEL_1_PROCESS_NAMES, LEVEL_2_PROCESS_NAMES, getSectionHierarchyAncestors } from './sectionHierarchy';
+import { extractProcessCode, LEVEL_1_PROCESS_NAMES, LEVEL_2_PROCESS_NAMES, buildSectionDisplayInfo } from './sectionHierarchy';
 
 interface ExportOptions {
   projectName?: string;
@@ -172,17 +172,20 @@ export async function exportStyledExcel({
     currentRowIndex++;
   };
 
-  // Group items by section preserving sequence
-  const sectionGroups: { section: string; items: SpecItem[] }[] = [];
+  // Group items by (상위 공정 경로 + 공정) preserving sequence
+  const displayInfo = buildSectionDisplayInfo(items);
+  const sectionGroups: { section: string; parents: string[]; title: string; items: SpecItem[] }[] = [];
   const sectionSeenMap = new Map<string, number>();
 
   items.forEach(item => {
     const sec = item.section || '기본 내역';
-    if (!sectionSeenMap.has(sec)) {
-      sectionSeenMap.set(sec, sectionGroups.length);
-      sectionGroups.push({ section: sec, items: [item] });
+    const info = displayInfo.get(item.id);
+    const key = info?.key || sec;
+    if (!sectionSeenMap.has(key)) {
+      sectionSeenMap.set(key, sectionGroups.length);
+      sectionGroups.push({ section: sec, parents: info?.parents || [], title: info?.title || sec, items: [item] });
     } else {
-      sectionGroups[sectionSeenMap.get(sec)!].items.push(item);
+      sectionGroups[sectionSeenMap.get(key)!].items.push(item);
     }
   });
 
@@ -190,22 +193,15 @@ export async function exportStyledExcel({
 
   // Populate data rows grouped by section with repeated main process headers
   sectionGroups.forEach(group => {
-    const ancestors = getSectionHierarchyAncestors(group.section);
-
-    if (ancestors && ancestors.l1Full) {
-      // 1. Level 1 Main Process Header (Light Green #E2EFDA - exactly as in Image 2)
-      writeHierarchyHeader(ancestors.l1Full, 'FFE2EFDA', 10);
-
-      // 2. Level 2 Sub Process Header (White #FFFFFF - exactly as in Image 2)
-      if (ancestors.l2Full) {
-        writeHierarchyHeader(ancestors.l2Full, 'FFFFFFFF', 9.5);
-      }
-
-      // 3. Level 3 Detailed Unit/Section Header (Clean Light Slate #F8FAFC - exactly as in Image 2)
-      writeHierarchyHeader(ancestors.l3Full || group.section, 'FFF8FAFC', 9.5);
+    if (group.parents.length > 0) {
+      // 상위 공정을 공정마다 반복: 대공종(연녹색) → 소공종(흰색) … → 해당 공정
+      group.parents.forEach((parent, pIdx) => {
+        writeHierarchyHeader(parent, pIdx === 0 ? 'FFE2EFDA' : 'FFFFFFFF', pIdx === 0 ? 10 : 9.5);
+      });
+      writeHierarchyHeader(group.title, 'FFF8FAFC', 9.5);
     } else {
-      // General section header fallback
-      writeHierarchyHeader(group.section, 'FFE2EFDA', 10);
+      // 최상위 공정
+      writeHierarchyHeader(group.title, 'FFE2EFDA', 10);
     }
 
     // Populate item rows under this section
