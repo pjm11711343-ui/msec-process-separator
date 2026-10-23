@@ -164,6 +164,11 @@ const TableRowInner = (props: {
   if (row.type === 'section-header') {
     const parents = row.parents || [];
     const title = row.title || row.sectionName;
+    // 1줄: 대공정(4자리)·중공정(6자리) / 2줄: 소공종(8자리)·세부단위(10자리)·코드 없는 하위공정
+    const fullPath = [...parents, title];
+    const codeLen = (p: string) => (p.match(/^(\d{4,10})\s/)?.[1].length || 0);
+    const upperLine = fullPath.filter(p => { const l = codeLen(p); return l > 0 && l <= 6; });
+    const lowerLine = fullPath.filter(p => !upperLine.includes(p));
     return (
       <div 
         style={style} 
@@ -184,14 +189,14 @@ const TableRowInner = (props: {
           P{row.index + 1}
         </div>
         <div className="w-[556px] shrink-0 flex flex-col justify-center px-3 overflow-hidden py-1">
-          {parents.length > 0 ? (
+          {upperLine.length > 0 && lowerLine.length > 0 ? (
             <div className="text-[10px] font-semibold text-sky-100/90 tracking-wide flex items-center gap-1.5 truncate leading-tight mb-0.5">
               <span className="opacity-80">📁</span>
-              <span className="bg-sky-700/60 px-1.5 py-0.5 rounded text-[9.5px] border border-sky-400/30 font-mono font-medium whitespace-pre">{parents.join('  ›  ')}</span>
+              <span className="bg-sky-700/60 px-1.5 py-0.5 rounded text-[9.5px] border border-sky-400/30 font-mono font-medium whitespace-pre">{upperLine.join('  ›  ')}</span>
             </div>
           ) : null}
-          <div className="text-xs font-black uppercase tracking-wider text-white truncate leading-tight whitespace-pre" title={[...parents, row.sectionName].join(' › ')}>
-            {title}
+          <div className="text-xs font-black uppercase tracking-wider text-white truncate leading-tight whitespace-pre" title={fullPath.join(' › ')}>
+            {(lowerLine.length > 0 ? lowerLine : upperLine).join('  ›  ')}
           </div>
         </div>
         <div className={`w-[182px] shrink-0 text-right font-mono font-bold px-2 text-sky-100 text-xs ${costViewType === 'material' ? 'bg-blue-600/40' : ''}`}>

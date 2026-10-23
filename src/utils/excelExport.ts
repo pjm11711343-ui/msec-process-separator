@@ -193,9 +193,9 @@ export async function exportStyledExcel({
 
   // Populate data rows grouped by section with repeated main process headers
   sectionGroups.forEach(group => {
-    if (group.parents.length > 0) {
+    if (group.parents.filter(p => !/^\d{4}\s/.test(p)).length > 0) {
       // 상위 공정을 공정마다 반복: 대공종(연녹색) → 소공종(흰색) … → 해당 공정
-      group.parents.forEach((parent, pIdx) => {
+      group.parents.filter(p => !/^\d{4}\s/.test(p)).forEach((parent, pIdx) => {
         writeHierarchyHeader(parent, pIdx === 0 ? 'FFE2EFDA' : 'FFFFFFFF', pIdx === 0 ? 10 : 9.5);
       });
       writeHierarchyHeader(group.title, 'FFF8FAFC', 9.5);

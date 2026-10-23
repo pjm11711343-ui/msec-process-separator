@@ -422,7 +422,7 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
           if (sn === wsname) return;
           const rowsOfSheet = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, raw: false, defval: '' }) as any[][];
           rowsOfSheet.forEach(r => (r || []).forEach(cell => {
-            const m = String(cell || '').trim().match(/^(\d{6}|\d{8}|\d{10})\s+(\S.*)$/);
+            const m = String(cell || '').trim().match(/^(\d{4}|\d{6}|\d{8}|\d{10})\s+(\S.*)$/);
             if (m) seed.push({ code: m[1], name: m[2].trim() });
           }));
         });

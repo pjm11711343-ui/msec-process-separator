@@ -349,6 +349,8 @@ export class HierarchicalSectionTracker {
   private seededL2 = new Set<string>();
   private seededL3: Record<string, string> = {};
   private seededCodes = new Set<string>();
+  private seededL0: Record<string, string> = {}; // 4자리 대공정 (예: 0101 기계설비공사)
+  private lastCodedHeader = '';
   private seededByName = new Map<string, string>(); // "자릿수|공백제거 이름" → 집계표 코드
 
   /**
@@ -359,6 +361,11 @@ export class HierarchicalSectionTracker {
     const sorted = [...entries].sort((a, b) => a.code.length - b.code.length);
     sorted.forEach(({ code, name }) => {
       if (!name) return;
+      if (code.length === 4) {
+        // 실제 6자리 공종의 앞자리인 경우만 대공정으로 인정 (연도 등 오인 방지)
+        if (sorted.some(e => e.code.length === 6 && e.code.startsWith(code))) this.seededL0[code] = name;
+        return;
+      }
       this.seededCodes.add(code);
       const nameKey = `${code.length}|${name.replace(/\s+/g, '')}`;
       if (!this.seededByName.has(nameKey)) this.seededByName.set(nameKey, code);
@@ -377,7 +384,12 @@ export class HierarchicalSectionTracker {
 
   /** 직전 handleHeaderRow 로 정해진 공정의 상위 경로 */
   public getLastParents(): string[] {
-    return [...this.lastParents];
+    // 맨 앞에 대공정(4자리, 예: "0101  기계설비공사")이 집계표에 있으면 붙임
+    const firstCode = [...this.lastParents, this.lastCodedHeader]
+      .map(p => (p || '').match(/^(\d{6,10})\s/)?.[1])
+      .find(Boolean);
+    const rootName = firstCode ? this.seededL0[firstCode.slice(0, 4)] : '';
+    return rootName ? [`${firstCode!.slice(0, 4)}  ${rootName}`, ...this.lastParents] : [...this.lastParents];
   }
 
   private l1Label(l1Code: string): string {
@@ -424,6 +436,8 @@ export class HierarchicalSectionTracker {
       const fixed = this.seededByName.get(`${code.length}|${rest.replace(/\s+/g, '')}`);
       if (fixed) code = fixed;
     }
+
+    this.lastCodedHeader = `${code}  ${rest}`;
 
     if (code.length === 6) {
       // Level 1 Header (e.g. 010104 세대내배관공사)
