@@ -20,7 +20,7 @@ interface VirtualizedTableBodyProps {
   toggleOne: (id: string, index: number) => void;
   toggleAll: (items: SpecItem[]) => void;
   handleMouseDown: (id: string, index: number) => void;
-  handleMouseEnter: (index: number) => void;
+  handleMouseEnter: (index: number, buttons?: number) => void;
   renderRuleIndicator: (item: SpecItem) => React.ReactNode;
   categories: string[];
   categoryColors?: Record<string, string>;
@@ -47,7 +47,7 @@ interface ItemData {
   toggleOne: (id: string, index: number) => void;
   toggleAll: (items: SpecItem[]) => void;
   handleMouseDown: (id: string, index: number) => void;
-  handleMouseEnter: (index: number) => void;
+  handleMouseEnter: (index: number, buttons?: number) => void;
   renderRuleIndicator: (item: SpecItem) => React.ReactNode;
   categoryColors?: Record<string, string>;
   onUpdateCategory: (id: string, category: string) => void;
@@ -226,7 +226,7 @@ const TableRowInner = (props: {
       style={style}
       {...ariaAttributes}
       onMouseDown={() => handleMouseDown(item.id, index)}
-      onMouseEnter={() => handleMouseEnter(index)}
+      onMouseEnter={(e) => handleMouseEnter(index, e.buttons)}
       className={`flex items-center min-w-[1816px] w-full border-b text-xs select-none transition-colors ${
         isHighDensity
           ? (isSelected ? 'bg-[#C5E0B4] border-[#2d5a27]/30' : 'bg-white hover:bg-slate-50/80 border-[#141414]/15')

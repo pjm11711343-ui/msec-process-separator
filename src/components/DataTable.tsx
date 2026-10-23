@@ -643,7 +643,7 @@ export default function DataTable({
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`sticky top-0 z-[60] mx-4 mb-4 p-4 border-2 ${
+        className={`fixed top-3 left-4 right-4 lg:left-[19rem] xl:left-[21rem] z-[60] p-4 border-2 ${
           theme === 'high-density' 
             ? 'bg-indigo-900 border-[#141414] text-white shadow-2xl' 
             : 'bg-indigo-600 border-indigo-700 text-white rounded-xl shadow-xl'
@@ -1175,8 +1175,14 @@ export default function DataTable({
     });
   }, []);
 
-  const handleMouseEnter = React.useCallback((index: number) => {
-    if (isDragging && dragStartIdx !== null) {
+  const handleMouseEnter = React.useCallback((index: number, buttons?: number) => {
+    // 마우스 버튼을 실제로 누르고 있을 때만 드래그 선택 (놓은 뒤 지나가기만 해도 선택되던 문제 방지)
+    if (isDragging && buttons !== undefined && (buttons & 1) === 0) {
+      setIsDragging(false);
+      setDragStartIdx(null);
+      return;
+    }
+    if (isDragging && dragStartIdx !== null && index !== dragStartIdx) {
       const start = Math.min(dragStartIdx, index);
       const end = Math.max(dragStartIdx, index);
       
@@ -1203,6 +1209,14 @@ export default function DataTable({
     setIsDragging(false);
     setDragStartIdx(null);
   };
+
+  // 표 밖에서 마우스를 놓아도 드래그 상태가 풀리도록
+  useEffect(() => {
+    if (!isDragging) return;
+    const up = () => { setIsDragging(false); setDragStartIdx(null); };
+    window.addEventListener('mouseup', up);
+    return () => window.removeEventListener('mouseup', up);
+  }, [isDragging]);
 
   const selectionSummary = useMemo(() => {
     if (selectedIds.size === 0) return null;
