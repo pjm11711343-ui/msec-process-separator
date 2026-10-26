@@ -603,8 +603,8 @@ export default function DataTable({
       titleText = '과거 학습 데이터 추천 🧠';
       IconComponent = History;
       colorClass = 'text-indigo-700 bg-indigo-50 border-indigo-200';
-      descriptionText = '과거에 동일한 품명/규격에 대해 사용자가 지정했던 분류를 자동으로 추천 적용했습니다.';
-      ruleDetails = `학습 기반 제안: "${item.category}"`;
+      descriptionText = '다른 현장에서 학습한 분류(품명·규격·공정)를 자동으로 적용했습니다.';
+      ruleDetails = item.remark && item.remark.startsWith('학습 분류') ? item.remark : `학습 기반 제안: "${item.category}"`;
     } else if (isManual) {
       type = 'manual';
       titleText = '수동 재지정 처리 완료 👤';

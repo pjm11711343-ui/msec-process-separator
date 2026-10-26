@@ -7,7 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { SpecItem, ThemeType, Project, CustomClassificationRule, INITIAL_CATEGORIES, SeparationMethod, ProcessCodeEntry } from './types';
 import { applyProcessCodeTable } from './utils/processCodeTable';
 import ProcessCodeManager from './components/ProcessCodeManager';
-import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES } from './utils/classifier';
+import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES, builtInClassify } from './utils/classifier';
+import { SiteLearning, aggregateLearning, learnFromItems, predictCategory, describePrediction } from './utils/learningModel';
 import { exportStyledExcel } from './utils/excelExport';
 import { healItem } from './utils/costCalculation';
 import { recordRuleExecutionFeedback } from './utils/patternAnalytics';
@@ -42,6 +43,9 @@ import {
   subscribeGlobalUIConfigFromFirestore,
   saveLearnedMappingToFirestore,
   subscribeLearnedMappingsFromFirestore,
+  saveSiteLearningToFirestore,
+  deleteSiteLearningFromFirestore,
+  subscribeSiteLearningsFromFirestore,
   isCloudQuotaExceeded,
   onQuotaStateChange
 } from './lib/firebase';
@@ -462,6 +466,80 @@ export default function App() {
     });
   };
 
+  // ── 현장 단위 분류 학습 ───────────────────────────────
+  const [siteLearnings, setSiteLearnings] = useState<SiteLearning[]>(() => {
+    try {
+      const saved = safeLocalStorage.getItem('mechauto_site_learnings');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [autoLearnOnComplete, setAutoLearnOnComplete] = useState<boolean>(() => safeLocalStorage.getItem('mechauto_auto_learn') !== 'false');
+  useEffect(() => {
+    safeLocalStorage.setItem('mechauto_auto_learn', String(autoLearnOnComplete));
+  }, [autoLearnOnComplete]);
+  const learningModel = React.useMemo(() => aggregateLearning(siteLearnings), [siteLearnings]);
+
+  const persistSiteLearnings = (next: SiteLearning[]) => {
+    safeLocalStorage.setItem('mechauto_site_learnings', JSON.stringify(next));
+    return next;
+  };
+
+  /** 한 현장의 현재 분류를 학습 (같은 현장을 다시 학습하면 덮어씀) */
+  const learnSite = (projectId: string, projectName: string, siteItems: SpecItem[], silent = false) => {
+    const info = buildSectionDisplayInfo(siteItems);
+    const withParents = siteItems.map(it => it.sectionParent !== undefined ? it : { ...it, sectionParent: info.get(it.id)?.parents.join(' › ') || '' });
+    const { votes, itemCount } = learnFromItems(withParents);
+    if (itemCount === 0) {
+      if (!silent) showNotification(`'${projectName}' 현장에는 학습할 분류 품목이 없습니다.`, 'info');
+      return 0;
+    }
+    const site: SiteLearning = {
+      projectId: projectId || projectName,
+      projectName,
+      learnedAt: Date.now(),
+      itemCount,
+      keyCount: Object.keys(votes).length,
+      votes
+    };
+    setSiteLearnings(prev => persistSiteLearnings([...prev.filter(s => s.projectId !== site.projectId), site]));
+    saveSiteLearningToFirestore(site).catch(console.warn);
+    if (!silent) showNotification(`'${projectName}' 현장 분류 ${itemCount}개 품목을 학습했습니다. 다른 현장 분류 시 자동으로 적용됩니다.`, 'success');
+    return itemCount;
+  };
+
+  const handleLearnCurrentSite = () => {
+    if (items.length === 0) {
+      showNotification('학습할 내역이 없습니다.', 'error');
+      return;
+    }
+    const proj = projects.find(p => p.name === currentProjectName);
+    learnSite(proj?.id || currentProjectName || 'current', currentProjectName || '현재 작업', items);
+  };
+
+  const handleLearnAllSites = () => {
+    let total = 0;
+    let siteCount = 0;
+    projects.forEach(p => {
+      if (!p.items || p.items.length === 0) return;
+      const n = learnSite(p.id, p.name, p.items, true);
+      if (n > 0) { total += n; siteCount++; }
+    });
+    showNotification(`저장된 ${siteCount}개 현장에서 ${total.toLocaleString()}개 품목 분류를 학습했습니다.`, 'success');
+  };
+
+  const handleDeleteSiteLearning = (projectId: string) => {
+    setSiteLearnings(prev => persistSiteLearnings(prev.filter(s => s.projectId !== projectId)));
+    deleteSiteLearningFromFirestore(projectId).catch(console.warn);
+  };
+
+  /** 학습 결과로 분류 (기본 규칙에 해당하는 품목은 제외) */
+  const predictFromLearning = (item: SpecItem) => {
+    if (builtInClassify(item)) return null;
+    return predictCategory(item, learningModel);
+  };
+
   const handleApplyRules = (updatedRules = customClassificationRules) => {
     if (items.length === 0) {
       showNotification('적용할 시트 데이터가 없습니다. 먼저 엑셀 파일을 업로드해 주세요.', 'error');
@@ -476,7 +554,10 @@ export default function App() {
           const withParent = item.sectionParent !== undefined
             ? item
             : { ...item, sectionParent: sectionInfo.get(item.id)?.parents.join(' › ') || '' };
-          const { category: newCategory, remark } = autoClassify(withParent, updatedRules);
+          const learned = predictFromLearning(withParent);
+          const { category: newCategory, remark } = learned
+            ? { category: learned.category, remark: describePrediction(learned) }
+            : autoClassify(withParent, updatedRules);
           const finalCategory = newCategory || item.category;
           if (finalCategory !== item.category) {
             changedCount++;
@@ -742,6 +823,10 @@ export default function App() {
     });
 
     // Subscribe to Learned Mappings (Classification Recommendation Service)
+    const unsubscribeSiteLearnings = subscribeSiteLearningsFromFirestore(sites => {
+      setSiteLearnings(() => persistSiteLearnings(sites));
+    });
+
     const unsubscribeLearned = subscribeLearnedMappingsFromFirestore(mappings => {
       if (mappings && Object.keys(mappings).length > 0) {
         setLearnedMappings(prev => {
@@ -889,6 +974,7 @@ export default function App() {
       unsubscribeCategories();
       unsubscribeUIConfig();
       unsubscribeLearned();
+      unsubscribeSiteLearnings();
       if (unsubscribeActiveSession) unsubscribeActiveSession();
       unsubscribeQuota();
     };
@@ -1287,7 +1373,12 @@ export default function App() {
       console.warn('Failed to sync completed status to Firestore:', err);
     }
 
-    showNotification(`현장 '${currentProjectName}' 내역분리가 '공정분리방식(B2)'으로 최종 완료되었습니다. (수정 시 비밀번호 필요)`, 'success');
+    if (autoLearnOnComplete) {
+      const learned = learnSite(targetProject.id, currentProjectName, items, true);
+      showNotification(`현장 '${currentProjectName}' 내역분리가 완료되었습니다.${learned > 0 ? ` 분류 ${learned}개 품목을 학습해 다른 현장에 적용합니다.` : ''} (수정 시 비밀번호 필요)`, 'success');
+    } else {
+      showNotification(`현장 '${currentProjectName}' 내역분리가 '공정분리방식(B2)'으로 최종 완료되었습니다. (수정 시 비밀번호 필요)`, 'success');
+    }
   };
 
   const checkLockAndProceed = (action: () => void) => {
@@ -1603,10 +1694,19 @@ export default function App() {
       try {
         const BATCH_SIZE = 50;
         const allClassifications: any[] = [];
-        const totalItems = targetItems.length;
+        // 학습된 현장 분류로 정해지는 품목은 서버로 보내지 않고 바로 적용
+        const classifyInfo = buildSectionDisplayInfo(items);
+        const serverItems: SpecItem[] = [];
+        targetItems.forEach(it => {
+          const withP = it.sectionParent !== undefined ? it : { ...it, sectionParent: classifyInfo.get(it.id)?.parents.join(' › ') || '' };
+          const learned = predictFromLearning(withP);
+          if (learned) allClassifications.push({ id: it.id, category: learned.category, learned: describePrediction(learned) });
+          else serverItems.push(it);
+        });
+        const totalItems = serverItems.length;
         
         for (let i = 0; i < totalItems; i += BATCH_SIZE) {
-          const batch = targetItems.slice(i, i + BATCH_SIZE);
+          const batch = serverItems.slice(i, i + BATCH_SIZE);
           
           // Brief throttle between batches
           if (i > 0) {
@@ -1690,7 +1790,10 @@ export default function App() {
         const newItems = items.map(item => {
           const found = classificationById.get(item.id);
           // Also update remark field with category name as requested by user
-          return found ? { ...item, category: found.category, remark: found.category } : item;
+          if (!found) return item;
+          return found.learned
+            ? { ...item, category: found.category, remark: found.learned, recommendationSource: 'history' as const }
+            : { ...item, category: found.category, remark: found.category };
         });
         
         setItems(newItems);
@@ -2130,8 +2233,20 @@ export default function App() {
       setTimeout(() => showNotification(`내역서 집계표에서 공종표 ${detectedCodes.length}개를 찾아 현장 공종표로 자동 등록했습니다. [공종표] 버튼에서 확인·수정할 수 있습니다.`, 'info'), 4200);
     }
     // Apply automatic classification based on rules immediately upon upload, and heal quantities
+    let learnedCount = 0;
     const classifiedItems = newItems.map(rawItem => {
       const item = healItem(rawItem);
+      // 0. 기본 규칙(설계변경·공정기준 외주·지급자재·간접비·스리브)이 최우선
+      const builtIn = builtInClassify(item);
+      if (builtIn) {
+        return { ...item, category: builtIn.category, originalCategory: builtIn.category, remark: builtIn.remark, recommendationSource: 'rule' as const };
+      }
+      // 0-1. 다른 현장에서 학습한 분류
+      const learned = predictCategory(item, learningModel);
+      if (learned) {
+        learnedCount++;
+        return { ...item, category: learned.category, originalCategory: learned.category, remark: describePrediction(learned), recommendationSource: 'history' as const };
+      }
       // 1. Check History-based Learned Mappings First (Highest confidence)
       const learnedKey = `${(item.name || '').trim()}_${(item.specification || '').trim()}`;
       const learnedCategory = learnedMappings[learnedKey];
@@ -2162,7 +2277,7 @@ export default function App() {
     ensureCategoriesExist(normalizedClassified);
     setItems(normalizedClassified);
     setWorkbook(wb);
-    showNotification(`엑셀 파일 업로드 완료: ${normalizedClassified.length}개의 항목을 불러왔으며, 공종 계층 표준화 및 규칙 기반 자동 분류가 적용되었습니다.`, 'success');
+    showNotification(`엑셀 파일 업로드 완료: ${normalizedClassified.length}개 항목을 불러왔습니다.${learnedCount > 0 ? ` (학습된 ${learningModel.siteCount}개 현장 기준 ${learnedCount}개 자동 분류)` : ''}`, 'success');
   };
 
   const handleDownloadResults = async () => {
@@ -3317,6 +3432,14 @@ export default function App() {
                 autoRuleCreation={autoRuleCreation}
                 onSetAutoRuleCreation={setAutoRuleCreation}
                 onRenameCategory={handleRenameCategory}
+                siteLearnings={siteLearnings.map(s => ({ projectId: s.projectId, projectName: s.projectName, learnedAt: s.learnedAt, itemCount: s.itemCount }))}
+                currentProjectName={currentProjectName}
+                savedProjectCount={projects.filter(p => p.items && p.items.length > 0).length}
+                onLearnCurrentSite={handleLearnCurrentSite}
+                onLearnAllSites={handleLearnAllSites}
+                onDeleteSiteLearning={handleDeleteSiteLearning}
+                autoLearnOnComplete={autoLearnOnComplete}
+                onSetAutoLearnOnComplete={setAutoLearnOnComplete}
               />
             )}
           </AnimatePresence>

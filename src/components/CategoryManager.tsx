@@ -26,6 +26,15 @@ interface Props {
   autoRuleCreation?: boolean;
   onSetAutoRuleCreation?: (val: boolean) => void;
   onRenameCategory?: (oldCategory: string, newCategory: string) => void;
+  // 현장 단위 학습
+  siteLearnings?: { projectId: string; projectName: string; learnedAt: number; itemCount: number }[];
+  currentProjectName?: string;
+  savedProjectCount?: number;
+  onLearnCurrentSite?: () => void;
+  onLearnAllSites?: () => void;
+  onDeleteSiteLearning?: (projectId: string) => void;
+  autoLearnOnComplete?: boolean;
+  onSetAutoLearnOnComplete?: (val: boolean) => void;
 }
 
 const PRESET_COLORS = [
@@ -70,7 +79,15 @@ export default function CategoryManager({
   initialTab = 'categories',
   autoRuleCreation = true,
   onSetAutoRuleCreation,
-  onRenameCategory
+  onRenameCategory,
+  siteLearnings = [],
+  currentProjectName = '',
+  savedProjectCount = 0,
+  onLearnCurrentSite,
+  onLearnAllSites,
+  onDeleteSiteLearning,
+  autoLearnOnComplete = true,
+  onSetAutoLearnOnComplete
 }: Props) {
   const [activeTab, setActiveTab] = useState<'categories' | 'rules' | 'patternStats' | 'stats'>(initialTab);
   
@@ -688,6 +705,69 @@ export default function CategoryManager({
           ) : activeTab === 'rules' ? (
             /* --- RULES TAB (CLASSIFICATION RULES) --- */
             <div className="space-y-6">
+              {/* 현장 단위 학습 */}
+              <div className="p-4 rounded-2xl border border-indigo-200 bg-indigo-50/60 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div>
+                    <div className="font-black text-indigo-900 text-sm">🧠 현장 분류 학습</div>
+                    <p className="text-[11px] text-indigo-700/80">공정분리를 마친 현장의 품명·규격·공정별 분류를 학습해 다른 현장을 분류할 때 자동 적용합니다 (학습 현장 다수결)</p>
+                  </div>
+                  <label className="flex items-center gap-2 font-bold text-indigo-900 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={autoLearnOnComplete}
+                      onChange={e => onSetAutoLearnOnComplete && onSetAutoLearnOnComplete(e.target.checked)}
+                      className="accent-indigo-600 w-4 h-4"
+                    />
+                    '내역분리 완료' 시 자동 학습
+                  </label>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <button
+                    type="button"
+                    onClick={onLearnCurrentSite}
+                    disabled={items.length === 0}
+                    className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold"
+                  >
+                    현재 현장 학습하기{currentProjectName ? ` (${currentProjectName})` : ''}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`저장된 ${savedProjectCount}개 현장의 현재 분류를 모두 학습합니다. (이미 학습한 현장은 최신 분류로 갱신)\n진행할까요?`)) onLearnAllSites && onLearnAllSites();
+                    }}
+                    disabled={savedProjectCount === 0}
+                    className="px-3 py-1.5 rounded-lg border border-indigo-300 bg-white hover:bg-indigo-50 disabled:opacity-40 text-indigo-700 font-bold"
+                  >
+                    저장된 모든 현장 학습 ({savedProjectCount}개)
+                  </button>
+                </div>
+                <div className="font-bold text-indigo-900 mb-1">학습된 현장 {siteLearnings.length}개 · 품목 {siteLearnings.reduce((a, s) => a + s.itemCount, 0).toLocaleString()}개</div>
+                {siteLearnings.length === 0 ? (
+                  <p className="text-[11px] text-slate-500">아직 학습된 현장이 없습니다. 분류를 마친 현장에서 [현재 현장 학습하기]를 누르거나 '내역분리 완료'를 하면 학습됩니다.</p>
+                ) : (
+                  <div className="max-h-36 overflow-y-auto rounded-lg border border-indigo-100 bg-white divide-y divide-slate-50">
+                    {[...siteLearnings].sort((a, b) => b.learnedAt - a.learnedAt).map(s => (
+                      <div key={s.projectId} className="flex items-center justify-between px-3 py-1.5">
+                        <span className="font-bold text-slate-700 truncate">{s.projectName || s.projectId}</span>
+                        <span className="flex items-center gap-3 shrink-0 text-slate-500">
+                          <span>{s.itemCount.toLocaleString()}개 품목</span>
+                          <span>{new Date(s.learnedAt).toLocaleDateString('ko-KR')}</span>
+                          <button
+                            type="button"
+                            onClick={() => onDeleteSiteLearning && onDeleteSiteLearning(s.projectId)}
+                            className="text-slate-300 hover:text-rose-500"
+                            title="이 현장 학습 삭제"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-2 text-[10px] text-slate-500">적용 순서: 기본 자동 분류 규칙 → 현장 학습 → 사용자 규칙 → 내장 키워드. 이미 올린 내역은 아래 [현재 시트 데이터에 분류 규칙 즉시 적용]으로 반영됩니다.</p>
+              </div>
               <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 text-xs">
                 <div className="font-black text-slate-700 mb-2">기본 자동 분류 규칙 (사용자 규칙보다 먼저 적용)</div>
                 <ul className="space-y-1.5 text-slate-600">

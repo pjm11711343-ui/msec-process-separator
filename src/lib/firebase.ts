@@ -706,3 +706,76 @@ export function subscribeLearnedMappingsFromFirestore(
     return () => {};
   }
 }
+
+/**
+ * 10. 현장 단위 분류 학습 (learned_sites/{projectId}) — 현장마다 1문서, 다시 학습하면 덮어씀
+ */
+export async function saveSiteLearningToFirestore(site: {
+  projectId: string;
+  projectName: string;
+  learnedAt: number;
+  itemCount: number;
+  keyCount: number;
+  votes: Record<string, Record<string, number>>;
+}): Promise<void> {
+  if (!checkQuotaState()) return;
+  try {
+    const ref = doc(db, 'learned_sites', site.projectId);
+    await setDoc(ref, {
+      projectId: site.projectId,
+      projectName: site.projectName,
+      learnedAt: site.learnedAt,
+      itemCount: site.itemCount,
+      keyCount: site.keyCount,
+      votesCompressed: LZString.compressToUTF16(JSON.stringify(site.votes || {}))
+    });
+  } catch (err) {
+    handleFirestoreError(err, 'saveSiteLearning');
+  }
+}
+
+export async function deleteSiteLearningFromFirestore(projectId: string): Promise<void> {
+  if (!checkQuotaState()) return;
+  try {
+    await deleteDoc(doc(db, 'learned_sites', projectId));
+  } catch (err) {
+    handleFirestoreError(err, 'deleteSiteLearning');
+  }
+}
+
+export function subscribeSiteLearningsFromFirestore(
+  callback: (sites: { projectId: string; projectName: string; learnedAt: number; itemCount: number; keyCount: number; votes: Record<string, Record<string, number>> }[]) => void
+): () => void {
+  if (!checkQuotaState()) return () => {};
+  try {
+    return onSnapshot(
+      collection(db, 'learned_sites'),
+      snapshot => {
+        const sites: any[] = [];
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          let votes = {};
+          try {
+            const raw = d.votesCompressed ? LZString.decompressFromUTF16(d.votesCompressed) : '';
+            votes = raw ? JSON.parse(raw) : {};
+          } catch (e) {
+            console.warn('Failed to read learned site', docSnap.id, e);
+          }
+          sites.push({
+            projectId: d.projectId || docSnap.id,
+            projectName: d.projectName || '',
+            learnedAt: d.learnedAt || 0,
+            itemCount: d.itemCount || 0,
+            keyCount: d.keyCount || 0,
+            votes
+          });
+        });
+        callback(sites);
+      },
+      error => handleFirestoreError(error, 'learned sites subscription')
+    );
+  } catch (err) {
+    handleFirestoreError(err, 'setup learned sites subscription');
+    return () => {};
+  }
+}
