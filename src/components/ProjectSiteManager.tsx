@@ -319,7 +319,7 @@ export default function ProjectSiteManager({
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSave()}
                   placeholder="예: 과천 지식정보타운 아파트 공사"
                   className={`w-full px-4 py-3 text-sm font-bold border focus:ring-0 outline-none transition-all text-slate-900 ${
                     isHighDensity ? 'border-[#141414] rounded-none focus:bg-yellow-50' : 'border-slate-200 rounded-xl focus:border-indigo-500'
@@ -452,7 +452,7 @@ export default function ProjectSiteManager({
                   type="text"
                   value={newProjectNameInput}
                   onChange={(e) => setNewProjectNameInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddNewProjectSubmit()}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleAddNewProjectSubmit()}
                   placeholder="예: 마포 더 클래시 건설현장"
                   className={`w-full px-4 py-3 text-sm font-bold border focus:ring-0 outline-none transition-all text-slate-900 ${
                     isHighDensity ? 'border-[#141414] rounded-none focus:bg-[#dfddd6]' : 'border-slate-200 rounded-xl focus:border-indigo-500'

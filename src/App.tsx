@@ -2565,7 +2565,7 @@ export default function App() {
                     maxLength={4}
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleVerifyPassword()}
+                    onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleVerifyPassword()}
                     placeholder="숫자 4자리를 입력하세요"
                     className={`w-full text-center tracking-widest text-lg font-black py-2.5 border focus:ring-0 outline-none transition-all text-slate-900 ${
                       theme === 'high-density' ? 'border-[#141414] rounded-none focus:bg-[#dfddd6]' : 'border-slate-200 rounded-xl focus:border-indigo-500'
@@ -3021,7 +3021,7 @@ export default function App() {
                   type="text"
                   value={manualSaveName}
                   onChange={(e) => setManualSaveName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleConfirmManualSave()}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleConfirmManualSave()}
                   placeholder="예: 마포 웰스트림 아파트 기계설비공사"
                   className={`w-full px-4 py-3 text-sm font-bold border focus:ring-0 outline-none transition-all text-slate-900 ${
                     theme === 'high-density' ? 'border-[#141414] rounded-none focus:bg-yellow-50' : 'border-slate-200 rounded-xl focus:border-indigo-500'

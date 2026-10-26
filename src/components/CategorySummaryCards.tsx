@@ -430,7 +430,7 @@ export default function CategorySummaryCards({
                           value={categoryNameInput}
                           onChange={(e) => setCategoryNameInput(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveRename(cat.name, e);
+                            if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) handleSaveRename(cat.name, e);
                             else if (e.key === 'Escape') handleCancelRename(e);
                           }}
                           className="w-full px-1.5 py-0.5 text-xs font-bold border border-indigo-500 rounded outline-none bg-white text-slate-800 shadow-xs focus:ring-1 focus:ring-indigo-400"
@@ -498,7 +498,7 @@ export default function CategorySummaryCards({
                             onUpdateSafetyAmount?.(Number(rawVal) || 0);
                           }}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
+                            if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) {
                               setIsEditingSafety(false);
                               const rawVal = safetyInputVal.replace(/[^0-9]/g, '');
                               onUpdateSafetyAmount?.(Number(rawVal) || 0);
@@ -565,7 +565,7 @@ export default function CategorySummaryCards({
                               }
                             }}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) {
                                 const rawVal = estimateInput.replace(/[^0-9]/g, '');
                                 onUpdateCategoryEstimate?.(cat.name, Number(rawVal) || 0);
                                 setEditingEstimate(null);
@@ -606,7 +606,7 @@ export default function CategorySummaryCards({
                           value={categoryNameInput}
                           onChange={(e) => setCategoryNameInput(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveRename(cat.name, e);
+                            if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) handleSaveRename(cat.name, e);
                             else if (e.key === 'Escape') handleCancelRename(e);
                           }}
                           className="w-full px-1.5 py-0.5 text-xs font-bold border border-amber-500 rounded outline-none bg-white text-slate-800 shadow-xs focus:ring-1 focus:ring-amber-400"
@@ -701,7 +701,7 @@ export default function CategorySummaryCards({
                               }
                             }}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) {
                                 const rawVal = estimateInput.replace(/[^0-9]/g, '');
                                 onUpdateCategoryEstimate?.(cat.name, Number(rawVal) || 0);
                                 setEditingEstimate(null);
@@ -741,7 +741,7 @@ export default function CategorySummaryCards({
                         value={categoryNameInput}
                         onChange={(e) => setCategoryNameInput(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSaveRename(cat.name, e);
+                          if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) handleSaveRename(cat.name, e);
                           else if (e.key === 'Escape') handleCancelRename(e);
                         }}
                         className="w-full px-1.5 py-0.5 text-xs font-bold border border-indigo-500 rounded outline-none bg-white text-slate-800 shadow-xs focus:ring-1 focus:ring-indigo-400"
@@ -835,7 +835,7 @@ export default function CategorySummaryCards({
                               }
                             }}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) {
                                 const rawVal = estimateInput.replace(/[^0-9]/g, '');
                                 onUpdateCategoryEstimate?.(cat.name, Number(rawVal) || 0);
                                 setEditingEstimate(null);
@@ -1137,7 +1137,7 @@ export default function CategorySummaryCards({
                             value={categoryNameInput}
                             onChange={(e) => setCategoryNameInput(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveRename(cat.name, e);
+                              if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) handleSaveRename(cat.name, e);
                               else if (e.key === 'Escape') handleCancelRename(e);
                             }}
                             className="w-full px-2 py-1 text-xs font-bold border border-indigo-500 rounded-lg outline-none bg-white text-slate-800 shadow-xs focus:ring-2 focus:ring-indigo-400"
@@ -1207,7 +1207,7 @@ export default function CategorySummaryCards({
                               onUpdateSafetyAmount?.(Number(rawVal) || 0);
                             }}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) {
                                 setIsEditingSafety(false);
                                 const rawVal = safetyInputVal.replace(/[^0-9]/g, '');
                                 onUpdateSafetyAmount?.(Number(rawVal) || 0);
@@ -1269,7 +1269,7 @@ export default function CategorySummaryCards({
                             value={categoryNameInput}
                             onChange={(e) => setCategoryNameInput(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveRename(cat.name, e);
+                              if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) handleSaveRename(cat.name, e);
                               else if (e.key === 'Escape') handleCancelRename(e);
                             }}
                             className="w-full px-2 py-1 text-xs font-bold border border-amber-500 rounded-lg outline-none bg-white text-slate-800 shadow-xs focus:ring-2 focus:ring-amber-400"
@@ -1371,7 +1371,7 @@ export default function CategorySummaryCards({
                           value={categoryNameInput}
                           onChange={(e) => setCategoryNameInput(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveRename(cat.name, e);
+                            if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) handleSaveRename(cat.name, e);
                             else if (e.key === 'Escape') handleCancelRename(e);
                           }}
                           className="w-full px-2 py-1 text-xs font-bold border border-indigo-500 rounded-lg outline-none bg-white text-slate-800 shadow-xs focus:ring-2 focus:ring-indigo-400"
@@ -1464,7 +1464,7 @@ export default function CategorySummaryCards({
                               }
                             }}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
+                              if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) {
                                 const rawVal = estimateInput.replace(/[^0-9]/g, '');
                                 onUpdateCategoryEstimate?.(cat.name, Number(rawVal) || 0);
                                 setEditingEstimate(null);

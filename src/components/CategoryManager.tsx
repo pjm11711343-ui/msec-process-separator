@@ -552,7 +552,7 @@ export default function CategoryManager({
                   onChange={(e) => setNewCategory(e.target.value)}
                   placeholder="새 카테고리 이름 입력 (예: 소방배관, 위생도기)..."
                   className="flex-grow px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-slate-800 text-sm"
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleAddCategory()}
                 />
                 <button 
                   onClick={handleAddCategory}
@@ -653,7 +653,7 @@ export default function CategoryManager({
                           onChange={(e) => setEditingValue(e.target.value)}
                           className="flex-grow px-3 py-1 border border-indigo-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-200 text-slate-800 text-sm"
                           autoFocus
-                          onKeyDown={(e) => e.key === 'Enter' && saveEditCategory()}
+                          onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && saveEditCategory()}
                         />
                         <button onClick={saveEditCategory} className="p-1.5 text-green-600 hover:bg-green-50 rounded-md">
                           <Check className="w-4 h-4" />

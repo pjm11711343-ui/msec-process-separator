@@ -117,7 +117,7 @@ const ColumnFilterDropdown = ({
           placeholder="검색어 입력..."
           className="w-full p-2.5 pr-9 border-2 border-slate-100 rounded-lg outline-none focus:border-indigo-500 font-bold text-slate-900 bg-slate-50 placeholder:text-slate-400 transition-all text-xs"
           onKeyDown={(e) => {
-            if (e.key === 'Enter') onClose();
+            if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) onClose();
             if (e.key === 'Escape') onClose();
           }}
         />
@@ -214,6 +214,37 @@ export default function DataTable({
   const [showAggregated, setShowAggregated] = useState(false);
   const [sectionFilter, setSectionFilter] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // 카테고리 일괄 변경: 목록에 없는 이름이면 바로 만들지 않고 확인을 받음
+  const [pendingNewCategory, setPendingNewCategory] = useState<string | null>(null);
+  const bulkCategoryInputRef = useRef<HTMLInputElement>(null);
+
+  const applyBulkCategory = (raw: string, allowNew = false) => {
+    const val = raw.trim();
+    if (!val || selectedIds.size === 0) return;
+    const exact = categories.find(c => c === val) || categories.find(c => c.replace(/\s+/g, '') === val.replace(/\s+/g, ''));
+    if (!exact && !allowNew) {
+      setPendingNewCategory(val);
+      return;
+    }
+    onUpdateCategories(Array.from(selectedIds), exact || val);
+    if (bulkCategoryInputRef.current) bulkCategoryInputRef.current.value = '';
+    setPendingNewCategory(null);
+    setSelectedIds(new Set());
+  };
+
+  // 새 카테고리 확인 시, 입력값과 비슷한 기존 카테고리 추천 (한글 입력 중 글자가 덧붙은 경우 등)
+  const similarCategories = useMemo(() => {
+    if (!pendingNewCategory) return [] as string[];
+    const v = pendingNewCategory.replace(/\s+/g, '');
+    return categories
+      .filter(c => {
+        const cc = c.replace(/\s+/g, '');
+        return cc.length >= 2 && (v.startsWith(cc) || cc.startsWith(v) || v.includes(cc));
+      })
+      .sort((a, b) => b.length - a.length)
+      .slice(0, 4);
+  }, [pendingNewCategory, categories]);
+
   const [selectionHelper, setSelectionHelper] = useState<{
     id: string;
     name: string;
@@ -285,7 +316,7 @@ export default function DataTable({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !(e.nativeEvent as KeyboardEvent).isComposing) {
       saveEdit();
     } else if (e.key === 'Escape') {
       setEditingId(null);
@@ -672,19 +703,38 @@ export default function DataTable({
                <input 
                  type="text"
                  list="category-suggestions"
+                 ref={bulkCategoryInputRef}
                  placeholder="변경할 카테고리 입력..."
                  className="w-full px-3 py-1.5 bg-white text-slate-900 text-xs font-bold rounded outline-none focus:ring-2 focus:ring-amber-400 transition-all"
+                 onChange={() => pendingNewCategory && setPendingNewCategory(null)}
                  onKeyDown={(e) => {
-                   if (e.key === 'Enter') {
-                     const val = (e.target as HTMLInputElement).value;
-                     if (val) {
-                       onUpdateCategories(Array.from(selectedIds), val);
-                       (e.target as HTMLInputElement).value = '';
-                       setSelectedIds(new Set());
-                     }
-                   }
+                   // 한글 조합 중 Enter 는 무시 (조합 중 Enter 가 두 번 들어와 글자가 덧붙던 문제)
+                   if (e.key !== 'Enter' || e.nativeEvent.isComposing || e.keyCode === 229) return;
+                   e.preventDefault();
+                   applyBulkCategory((e.target as HTMLInputElement).value);
                  }}
                />
+               {pendingNewCategory && (
+                 <div className="absolute left-0 top-full mt-1 z-[70] w-[300px] p-3 rounded-lg bg-white text-slate-800 shadow-2xl border border-amber-300 text-xs">
+                   <p className="font-bold text-amber-700 mb-2">'{pendingNewCategory}' 은(는) 없는 카테고리입니다.</p>
+                   {similarCategories.length > 0 && (
+                     <div className="mb-2">
+                       <p className="text-[10px] text-slate-500 mb-1">혹시 이 카테고리인가요?</p>
+                       <div className="flex flex-wrap gap-1">
+                         {similarCategories.map(c => (
+                           <button key={c} type="button" onClick={() => applyBulkCategory(c)} className="px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200">
+                             {c}
+                           </button>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+                   <div className="flex gap-1.5 justify-end">
+                     <button type="button" onClick={() => setPendingNewCategory(null)} className="px-2 py-1 rounded border border-slate-200 hover:bg-slate-50">취소</button>
+                     <button type="button" onClick={() => applyBulkCategory(pendingNewCategory, true)} className="px-2 py-1 rounded bg-amber-500 hover:bg-amber-600 text-white font-bold">새 카테고리로 만들기</button>
+                   </div>
+                 </div>
+               )}
             </div>
           </div>
 
@@ -697,8 +747,8 @@ export default function DataTable({
                  placeholder="변경할 구간(공종) 입력..."
                  className="w-full px-3 py-1.5 bg-white text-slate-900 text-xs font-bold rounded outline-none focus:ring-2 focus:ring-amber-400 transition-all"
                  onKeyDown={(e) => {
-                   if (e.key === 'Enter') {
-                     const val = (e.target as HTMLInputElement).value;
+                   if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+                     const val = (e.target as HTMLInputElement).value.trim();
                      if (val) {
                        onUpdateSections(Array.from(selectedIds), val);
                        (e.target as HTMLInputElement).value = '';
