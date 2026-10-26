@@ -107,7 +107,7 @@ const TableRowInner = (props: {
         style={style} 
         {...ariaAttributes}
         className={`flex items-center min-w-[1816px] w-full text-xs font-bold ${
-          isHighDensity ? 'bg-indigo-700 text-white border-[#141414]' : 'bg-indigo-900 text-white border-slate-800'
+          isHighDensity ? 'bg-indigo-700 text-white border-[#0a1220]' : 'bg-indigo-900 text-white border-slate-800'
         } border-b select-none`}
       >
         <div className="w-[44px] shrink-0 flex items-center justify-center">
@@ -174,7 +174,7 @@ const TableRowInner = (props: {
         style={style} 
         {...ariaAttributes}
         className={`flex items-center min-w-[1816px] w-full text-xs font-bold ${
-          isHighDensity ? 'bg-[#0284C7] text-white border-[#141414]' : 'bg-sky-600 text-white border-sky-700'
+          isHighDensity ? 'bg-[#13233a] text-white border-[#0a1220]' : 'bg-sky-600 text-white border-sky-700'
         } border-b select-none shadow-xs`}
       >
         <div className="w-[44px] shrink-0 flex items-center justify-center">
@@ -192,7 +192,7 @@ const TableRowInner = (props: {
           {upperLine.length > 0 && lowerLine.length > 0 ? (
             <div className="text-[10px] font-semibold text-sky-100/90 tracking-wide flex items-center gap-1.5 truncate leading-tight mb-0.5">
               <span className="opacity-80">📁</span>
-              <span className="bg-sky-700/60 px-1.5 py-0.5 rounded text-[9.5px] border border-sky-400/30 font-mono font-medium whitespace-pre">{upperLine.join('  ›  ')}</span>
+              <span className={`px-1.5 py-0.5 rounded text-[9.5px] border font-mono font-medium whitespace-pre ${isHighDensity ? 'bg-[#e8a33d]/15 border-[#e8a33d]/40 text-[#f3c77d]' : 'bg-sky-700/60 border-sky-400/30'}`}>{upperLine.join('  ›  ')}</span>
             </div>
           ) : null}
           <div className="text-xs font-black uppercase tracking-wider text-white truncate leading-tight whitespace-pre" title={fullPath.join(' › ')}>
@@ -229,7 +229,7 @@ const TableRowInner = (props: {
       onMouseEnter={(e) => handleMouseEnter(index, e.buttons)}
       className={`flex items-center min-w-[1816px] w-full border-b text-xs select-none transition-colors ${
         isHighDensity
-          ? (isSelected ? 'bg-[#C5E0B4] border-[#2d5a27]/30' : 'bg-white hover:bg-slate-50/80 border-[#141414]/15')
+          ? (isSelected ? 'bg-[#C5E0B4] border-[#2d5a27]/30' : 'bg-white hover:bg-slate-50/80 border-[#0a1220]/15')
           : (isSelected ? 'bg-indigo-50/90 border-indigo-200' : 'bg-white hover:bg-slate-50 border-slate-100')
       } ${isSelected ? 'shadow-[inset_3px_0_0_0_#4f46e5]' : ''}`}
     >
@@ -239,7 +239,7 @@ const TableRowInner = (props: {
             type="checkbox" 
             checked={isSelected}
             onChange={() => toggleOne(item.id, index)}
-            className={isHighDensity ? 'accent-[#141414] cursor-pointer' : 'accent-indigo-600 cursor-pointer'}
+            className={isHighDensity ? 'accent-[#0a1220] cursor-pointer' : 'accent-indigo-600 cursor-pointer'}
           />
         )}
       </div>
@@ -430,7 +430,7 @@ export const VirtualizedTableBody: React.FC<VirtualizedTableBodyProps> = ({
   const isHighDensity = theme === 'high-density';
   
   const borderCellClass = React.useMemo(() => 
-    isHighDensity ? 'border-r border-[#141414]/15' : 'border-r border-slate-100',
+    isHighDensity ? 'border-r border-[#0a1220]/15' : 'border-r border-slate-100',
     [isHighDensity]
   );
 

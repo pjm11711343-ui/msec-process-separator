@@ -556,8 +556,8 @@ export default function DataTable({
       badge: 'bg-zinc-100 text-zinc-600 border-zinc-200'
     },
     'high-density': {
-      table: 'bg-white text-[#141414] border-[#141414]',
-      header: 'bg-[#F2F2F2] text-[#141414] uppercase text-[11px] font-bold border-b border-[#141414]',
+      table: 'bg-white text-[#0a1220] border-[#0a1220]',
+      header: 'bg-[#F2F2F2] text-[#0a1220] uppercase text-[11px] font-bold border-b border-[#0a1220]',
       row: 'hover:bg-gray-50 border-gray-200',
       badge: 'bg-gray-100 text-gray-800 border-gray-300'
     }
@@ -680,7 +680,7 @@ export default function DataTable({
         animate={{ opacity: 1, y: 0 }}
         className={`fixed top-3 left-4 right-4 lg:left-[19rem] xl:left-[21rem] z-[60] p-4 border-2 ${
           theme === 'high-density' 
-            ? 'bg-indigo-900 border-[#141414] text-white shadow-2xl' 
+            ? 'bg-indigo-900 border-[#0a1220] text-white shadow-2xl' 
             : 'bg-indigo-600 border-indigo-700 text-white rounded-xl shadow-xl'
         } flex flex-wrap items-center gap-6`}
       >
@@ -810,7 +810,7 @@ export default function DataTable({
 
   const renderFilters = () => {
     const selectClass = theme === 'high-density'
-      ? "text-[11px] font-bold uppercase p-1 bg-white border border-[#141414] focus:outline-none"
+      ? "text-[11px] font-bold uppercase p-1 bg-white border border-[#0a1220] focus:outline-none"
       : "text-xs p-2 bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-indigo-500 outline-none";
 
     const labelClass = theme === 'high-density'
@@ -828,7 +828,7 @@ export default function DataTable({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="품명 및 규격 실시간 검색..."
               className={`w-full ${theme === 'high-density'
-                ? "text-[11px] font-bold uppercase p-1 bg-white border border-[#141414] focus:outline-none placeholder-gray-400"
+                ? "text-[11px] font-bold uppercase p-1 bg-white border border-[#0a1220] focus:outline-none placeholder-gray-400"
                 : "text-xs p-2 pl-8 pr-8 bg-white border border-slate-200 rounded-md focus:ring-1 focus:ring-indigo-500 outline-none placeholder-slate-400"
               }`}
             />
@@ -900,10 +900,10 @@ export default function DataTable({
             className={`px-3 py-1.5 text-[11px] font-bold rounded-md transition-all flex items-center gap-2 border shadow-xs h-[32px] sm:h-[30px] whitespace-nowrap cursor-pointer ${
               showUnclassifiedOnly
                 ? theme === 'high-density'
-                  ? 'bg-amber-100 text-amber-950 border-[#141414] ring-1 ring-amber-400'
+                  ? 'bg-amber-100 text-amber-950 border-[#0a1220] ring-1 ring-amber-400'
                   : 'bg-amber-500 text-white border-amber-600 shadow-amber-100 font-black'
                 : theme === 'high-density'
-                  ? 'bg-white text-slate-700 border-[#141414] hover:bg-slate-50'
+                  ? 'bg-white text-slate-700 border-[#0a1220] hover:bg-slate-50'
                   : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
             }`}
             title="카테고리가 분류되지 않은 대상만 필터링합니다."
@@ -979,13 +979,13 @@ export default function DataTable({
                <div className="flex bg-gray-200 p-0.5 rounded-sm border border-gray-300">
                  <button 
                    onClick={() => setViewMode('process')}
-                   className={`px-3 py-1 text-[9px] font-black uppercase transition-all ${viewMode === 'process' ? 'bg-[#141414] text-white' : 'text-gray-600 hover:text-black'}`}
+                   className={`px-3 py-1 text-[9px] font-black uppercase transition-all ${viewMode === 'process' ? 'bg-[#0a1220] text-white' : 'text-gray-600 hover:text-black'}`}
                  >
                    공정별 보기
                  </button>
                  <button 
                    onClick={() => setViewMode('category')}
-                   className={`px-3 py-1 text-[9px] font-black uppercase transition-all ${viewMode === 'category' ? 'bg-[#141414] text-white' : 'text-gray-600 hover:text-black'}`}
+                   className={`px-3 py-1 text-[9px] font-black uppercase transition-all ${viewMode === 'category' ? 'bg-[#0a1220] text-white' : 'text-gray-600 hover:text-black'}`}
                  >
                    카테고리별 보기
                  </button>
@@ -1023,7 +1023,7 @@ export default function DataTable({
                {onOpenProcessCodes && (
                  <button
                    onClick={onOpenProcessCodes}
-                   className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border transition-all ${processCodes && processCodes.length > 0 ? 'bg-white border-[#141414] text-[#141414]' : 'bg-amber-400 border-amber-500 text-black animate-pulse'}`}
+                   className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border transition-all ${processCodes && processCodes.length > 0 ? 'bg-white border-[#0a1220] text-[#0a1220]' : 'bg-amber-400 border-amber-500 text-black animate-pulse'}`}
                    title="공정분리 전에 현장 공종표(현장명·대·중·소공종·세부단위)를 먼저 등록하세요"
                  >
                    공종표 {processCodes && processCodes.length > 0 ? `(${processCodes.length})` : '등록'}
@@ -1033,7 +1033,7 @@ export default function DataTable({
                <button 
                   onClick={() => onClassify()}
                   disabled={isClassifying}
-                  className="px-4 py-1 bg-[#141414] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50"
+                  className="px-4 py-1 bg-[#0a1220] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all disabled:opacity-50"
                >
                   {isClassifying ? '분석 중...' : '자동 공정 분리 실행'}
                </button>
@@ -1157,13 +1157,13 @@ export default function DataTable({
   const renderFooter = () => {
     if (theme !== 'high-density') return null;
     return (
-      <footer className="p-3 bg-[#EBEAE8] border-t border-[#141414] flex flex-col sm:flex-row justify-between items-center gap-4">
+      <footer className="p-3 bg-[#ECEFF3] border-t border-[#0a1220] flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="flex flex-wrap gap-4 w-full sm:w-auto">
           <div className="flex flex-col">
             <span className="text-[9px] uppercase font-bold opacity-50">이상 항목 감지</span>
             <span className="text-[11px] font-bold text-slate-900 tracking-tight">발견된 오류 없음 / 통과</span>
           </div>
-          <div className="flex flex-col border-l border-[#141414]/10 pl-4">
+          <div className="flex flex-col border-l border-[#0a1220]/10 pl-4">
             <span className="text-[9px] uppercase font-bold opacity-50">분류 로직 버전</span>
             <span className="text-[11px] font-bold uppercase font-mono">Semantic AI v4.2 PRO</span>
           </div>
@@ -1171,13 +1171,13 @@ export default function DataTable({
           <div className="flex gap-2 w-full sm:w-auto">
             <button 
               onClick={onOpenAnalysis}
-              className="flex-1 sm:flex-none px-4 py-1 bg-white border border-[#141414] text-[10px] font-bold uppercase transition-colors hover:bg-zinc-50"
+              className="flex-1 sm:flex-none px-4 py-1 bg-white border border-[#0a1220] text-[10px] font-bold uppercase transition-colors hover:bg-zinc-50"
             >
               자체 시스템 AI 분석
             </button>
             <button 
               onClick={handleDownload}
-              className="flex-1 sm:flex-none px-6 py-1 bg-[#141414] text-white text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-zinc-800"
+              className="flex-1 sm:flex-none px-6 py-1 bg-[#0a1220] text-white text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-zinc-800"
             >
               보고서 출력
             </button>
@@ -1342,27 +1342,27 @@ export default function DataTable({
             {/* Header: Exact matching 1816px columns with 2-tier sub-headers */}
             <div className={`sticky top-0 z-20 select-none shadow-xs border-b ${
               theme === 'high-density'
-                ? 'bg-[#F2F2F2] text-[#141414] border-[#141414]'
+                ? 'bg-[#F2F2F2] text-[#0a1220] border-[#0a1220]'
                 : 'bg-slate-50 text-slate-900 border-slate-200'
             }`}>
               <div className="flex items-stretch h-11 text-[11px] font-bold">
                 {/* 1. Checkbox: 44px */}
-                <div className={`w-[44px] shrink-0 flex items-center justify-center border-r ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[44px] shrink-0 flex items-center justify-center border-r ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   <input 
                     type="checkbox" 
                     checked={pageItems.length > 0 && pageItems.every(i => selectedIds.has(i.id))}
                     onChange={() => toggleAll(pageItems)}
-                    className={theme === 'high-density' ? 'accent-[#141414] cursor-pointer' : 'accent-indigo-600 cursor-pointer'}
+                    className={theme === 'high-density' ? 'accent-[#0a1220] cursor-pointer' : 'accent-indigo-600 cursor-pointer'}
                   />
                 </div>
 
                 {/* 2. No: 50px */}
-                <div className={`w-[50px] shrink-0 flex items-center justify-center border-r uppercase tracking-tight ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[50px] shrink-0 flex items-center justify-center border-r uppercase tracking-tight ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   No.
                 </div>
 
                 {/* 3. Name: 230px */}
-                <div className={`w-[230px] shrink-0 flex items-center justify-between px-2.5 border-r relative group ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[230px] shrink-0 flex items-center justify-between px-2.5 border-r relative group ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   <span className="truncate font-black">품 명</span>
                   <button 
                     type="button"
@@ -1393,7 +1393,7 @@ export default function DataTable({
                 </div>
 
                 {/* 4. Spec: 210px */}
-                <div className={`w-[210px] shrink-0 flex items-center justify-between px-2 border-r relative group ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[210px] shrink-0 flex items-center justify-between px-2 border-r relative group ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   <span className="truncate font-black">규 격</span>
                   <button 
                     type="button"
@@ -1424,22 +1424,22 @@ export default function DataTable({
                 </div>
 
                 {/* 5. Unit: 48px */}
-                <div className={`w-[48px] shrink-0 flex items-center justify-center border-r uppercase tracking-tight ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[48px] shrink-0 flex items-center justify-center border-r uppercase tracking-tight ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   단위
                 </div>
 
                 {/* 6. Quantity: 68px */}
-                <div className={`w-[68px] shrink-0 flex items-center justify-center border-r uppercase tracking-tight ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[68px] shrink-0 flex items-center justify-center border-r uppercase tracking-tight ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   수량
                 </div>
 
                 {/* 7 & 8. Material: 182px (84px + 98px) */}
-                <div className={`w-[182px] shrink-0 flex flex-col border-r ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'} ${costViewType === 'material' ? 'bg-blue-600 text-white ring-2 ring-inset ring-blue-400 z-10' : ''}`}>
-                  <div className={`h-1/2 flex items-center justify-center border-b font-black ${theme === 'high-density' ? 'border-[#141414]' : (costViewType === 'material' ? 'border-blue-400' : 'border-slate-200')}`}>
+                <div className={`w-[182px] shrink-0 flex flex-col border-r ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'} ${costViewType === 'material' ? 'bg-blue-600 text-white ring-2 ring-inset ring-blue-400 z-10' : ''}`}>
+                  <div className={`h-1/2 flex items-center justify-center border-b font-black ${theme === 'high-density' ? 'border-[#0a1220]' : (costViewType === 'material' ? 'border-blue-400' : 'border-slate-200')}`}>
                     재 료 비
                   </div>
                   <div className="h-1/2 flex text-[10px]">
-                    <div className={`w-[84px] shrink-0 flex items-center justify-center border-r ${theme === 'high-density' ? 'border-[#141414]' : (costViewType === 'material' ? 'border-blue-400' : 'border-slate-200')}`}>
+                    <div className={`w-[84px] shrink-0 flex items-center justify-center border-r ${theme === 'high-density' ? 'border-[#0a1220]' : (costViewType === 'material' ? 'border-blue-400' : 'border-slate-200')}`}>
                       단 가
                     </div>
                     <div className="w-[98px] shrink-0 flex items-center justify-center">
@@ -1449,12 +1449,12 @@ export default function DataTable({
                 </div>
 
                 {/* 9 & 10. Labor: 182px (84px + 98px) */}
-                <div className={`w-[182px] shrink-0 flex flex-col border-r ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'} ${costViewType === 'labor' ? 'bg-amber-600 text-white ring-2 ring-inset ring-amber-400 z-10' : ''}`}>
-                  <div className={`h-1/2 flex items-center justify-center border-b font-black ${theme === 'high-density' ? 'border-[#141414]' : (costViewType === 'labor' ? 'border-amber-400' : 'border-slate-200')}`}>
+                <div className={`w-[182px] shrink-0 flex flex-col border-r ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'} ${costViewType === 'labor' ? 'bg-amber-600 text-white ring-2 ring-inset ring-amber-400 z-10' : ''}`}>
+                  <div className={`h-1/2 flex items-center justify-center border-b font-black ${theme === 'high-density' ? 'border-[#0a1220]' : (costViewType === 'labor' ? 'border-amber-400' : 'border-slate-200')}`}>
                     노 무 비
                   </div>
                   <div className="h-1/2 flex text-[10px]">
-                    <div className={`w-[84px] shrink-0 flex items-center justify-center border-r ${theme === 'high-density' ? 'border-[#141414]' : (costViewType === 'labor' ? 'border-amber-400' : 'border-slate-200')}`}>
+                    <div className={`w-[84px] shrink-0 flex items-center justify-center border-r ${theme === 'high-density' ? 'border-[#0a1220]' : (costViewType === 'labor' ? 'border-amber-400' : 'border-slate-200')}`}>
                       단 가
                     </div>
                     <div className="w-[98px] shrink-0 flex items-center justify-center">
@@ -1464,12 +1464,12 @@ export default function DataTable({
                 </div>
 
                 {/* 11 & 12. Total: 198px (88px + 110px) */}
-                <div className={`w-[198px] shrink-0 flex flex-col border-r ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'} ${costViewType === 'total' ? 'bg-indigo-600 text-white ring-2 ring-inset ring-indigo-400 z-10' : ''}`}>
-                  <div className={`h-1/2 flex items-center justify-center border-b font-black ${theme === 'high-density' ? 'border-[#141414]' : (costViewType === 'total' ? 'border-indigo-400' : 'border-slate-200')}`}>
+                <div className={`w-[198px] shrink-0 flex flex-col border-r ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'} ${costViewType === 'total' ? 'bg-indigo-600 text-white ring-2 ring-inset ring-indigo-400 z-10' : ''}`}>
+                  <div className={`h-1/2 flex items-center justify-center border-b font-black ${theme === 'high-density' ? 'border-[#0a1220]' : (costViewType === 'total' ? 'border-indigo-400' : 'border-slate-200')}`}>
                     합 계
                   </div>
                   <div className="h-1/2 flex text-[10px]">
-                    <div className={`w-[88px] shrink-0 flex items-center justify-center border-r ${theme === 'high-density' ? 'border-[#141414]' : (costViewType === 'total' ? 'border-indigo-400' : 'border-slate-200')}`}>
+                    <div className={`w-[88px] shrink-0 flex items-center justify-center border-r ${theme === 'high-density' ? 'border-[#0a1220]' : (costViewType === 'total' ? 'border-indigo-400' : 'border-slate-200')}`}>
                       단 가
                     </div>
                     <div className={`w-[110px] shrink-0 flex items-center justify-center font-bold ${costViewType === 'total' ? 'text-amber-300' : 'text-indigo-600'}`}>
@@ -1479,22 +1479,22 @@ export default function DataTable({
                 </div>
 
                 {/* 13. Remark: 104px */}
-                <div className={`w-[104px] shrink-0 flex items-center px-2 border-r font-black ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[104px] shrink-0 flex items-center px-2 border-r font-black ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   비 고
                 </div>
 
                 {/* 14. Memo: 130px */}
-                <div className={`w-[130px] shrink-0 flex items-center px-2 border-r font-black ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[130px] shrink-0 flex items-center px-2 border-r font-black ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   메 모
                 </div>
 
                 {/* 15. Execution Amount: 120px */}
-                <div className={`w-[120px] shrink-0 flex items-center px-2 border-r font-black ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[120px] shrink-0 flex items-center px-2 border-r font-black ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   실행금액
                 </div>
 
                 {/* 16. Comparison: 80px */}
-                <div className={`w-[80px] shrink-0 flex items-center justify-center border-r font-black ${theme === 'high-density' ? 'border-[#141414]' : 'border-slate-200'}`}>
+                <div className={`w-[80px] shrink-0 flex items-center justify-center border-r font-black ${theme === 'high-density' ? 'border-[#0a1220]' : 'border-slate-200'}`}>
                   대 비
                 </div>
 
@@ -1574,7 +1574,7 @@ export default function DataTable({
             {/* Sticky Total Footer: 1616px matching columns */}
             {items.length > 0 && (
               <div className={`sticky bottom-0 z-20 flex items-center h-11 border-t-2 ${
-                theme === 'high-density' ? 'bg-[#141414] text-white border-[#141414]' : 'bg-slate-800 text-white border-slate-900'
+                theme === 'high-density' ? 'bg-[#0a1220] text-white border-[#0a1220]' : 'bg-slate-800 text-white border-slate-900'
               }`}>
                 {/* Spans Checkbox to Total Unit Price: 44+50+230+210+48+68+84+98+84+98+88 = 1102px */}
                 <div className="w-[1102px] shrink-0 px-4 flex items-center justify-between border-r border-white/10 overflow-hidden">
@@ -1700,7 +1700,7 @@ export default function DataTable({
           exit={{ y: 100, opacity: 0 }}
           className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-2xl px-4 pointer-events-none"
         >
-          <div className="bg-[#141414] text-white rounded-2xl shadow-2xl border border-white/10 p-4 flex items-center justify-between gap-6 backdrop-blur-md bg-opacity-95 pointer-events-auto">
+          <div className="bg-[#0a1220] text-white rounded-2xl shadow-2xl border border-white/10 p-4 flex items-center justify-between gap-6 backdrop-blur-md bg-opacity-95 pointer-events-auto">
             <div className="flex items-center gap-4">
               <div className="bg-indigo-600 p-2 rounded-xl">
                 <Table className="w-5 h-5 text-white" />

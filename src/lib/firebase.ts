@@ -254,9 +254,9 @@ export async function saveProjectToFirestore(project: Project): Promise<void> {
     const dataToSave: any = {
       id: docId,
       name: project.name,
-      theme: project.theme || 'industrial',
+      theme: project.theme || 'high-density',
       config: project.config || {
-        theme: project.theme || 'industrial',
+        theme: project.theme || 'high-density',
         fontFamily: '"Gulim", "굴림", Dotum, "돋움", sans-serif',
         fontSize: 11
       },
@@ -327,7 +327,7 @@ export function subscribeProjectsFromFirestore(callback: (projects: Project[]) =
             id: docSnap.id,
             name: data.name || '무제 현장',
             items,
-            theme: data.theme || 'industrial',
+            theme: data.theme || 'high-density',
             config: data.config,
             categories: data.categories || [],
             categoryEstimates: data.categoryEstimates || {},

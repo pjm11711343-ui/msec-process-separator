@@ -108,7 +108,7 @@ export default function ProjectSiteManager({
           }}
           className={`p-2 transition-all flex items-center gap-1.5 border ${
             isHighDensity 
-              ? 'bg-yellow-400 text-black border-[#141414] font-black uppercase text-[9px] hover:bg-yellow-300' 
+              ? 'bg-yellow-400 text-black border-[#0a1220] font-black uppercase text-[9px] hover:bg-yellow-300' 
               : 'bg-white text-indigo-600 border-indigo-100 rounded-xl hover:bg-indigo-50 text-xs font-bold shadow-sm'
           }`}
           title="새로운 빈 분석 현장 추가"
@@ -129,11 +129,11 @@ export default function ProjectSiteManager({
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               className={`absolute top-full left-0 mt-2 w-80 z-50 shadow-2xl overflow-hidden ${
                 isHighDensity 
-                  ? 'bg-[#E7E6E1] border-2 border-[#141414] rounded-none' 
+                  ? 'bg-[#E6EAF0] border-2 border-[#0a1220] rounded-none' 
                   : 'bg-white border border-slate-200 rounded-2xl'
               }`}
             >
-              <div className={`px-4 py-3 border-b flex justify-between items-center ${isHighDensity ? 'bg-[#141414] text-white border-[#141414]' : 'bg-slate-50 border-slate-100'}`}>
+              <div className={`px-4 py-3 border-b flex justify-between items-center ${isHighDensity ? 'bg-[#0a1220] text-white border-[#0a1220]' : 'bg-slate-50 border-slate-100'}`}>
                 <div className="flex items-center gap-2">
                   <FolderOpen size={14} />
                   <span className="text-[10px] font-black uppercase tracking-widest">분석 현장 보관함</span>
@@ -153,7 +153,7 @@ export default function ProjectSiteManager({
 
               <div className="max-h-80 overflow-y-auto">
                 <div 
-                  className={`p-3 border-b cursor-pointer hover:bg-green-50 transition-colors flex items-center gap-3 ${isHighDensity ? 'border-[#141414]/10' : 'border-slate-50'}`}
+                  className={`p-3 border-b cursor-pointer hover:bg-green-50 transition-colors flex items-center gap-3 ${isHighDensity ? 'border-[#0a1220]/10' : 'border-slate-50'}`}
                   onClick={() => {
                     setNewName('');
                     setIsNaming(true);
@@ -170,7 +170,7 @@ export default function ProjectSiteManager({
                 </div>
 
                 <div 
-                  className={`p-3 border-b cursor-pointer hover:bg-amber-50 transition-colors flex items-center gap-3 ${isHighDensity ? 'border-[#141414]/10' : 'border-slate-50'}`}
+                  className={`p-3 border-b cursor-pointer hover:bg-amber-50 transition-colors flex items-center gap-3 ${isHighDensity ? 'border-[#0a1220]/10' : 'border-slate-50'}`}
                   onClick={() => {
                     setNewProjectNameInput('');
                     setIsAddingNewProject(true);
@@ -247,7 +247,7 @@ export default function ProjectSiteManager({
 
               {/* 백업 및 복구 제어부 */}
               <div className={`p-4 border-t flex flex-col gap-2 ${
-                isHighDensity ? 'border-black bg-[#E7E6E1]/90' : 'border-slate-100 bg-slate-50/60'
+                isHighDensity ? 'border-black bg-[#E6EAF0]/90' : 'border-slate-100 bg-slate-50/60'
               }`}>
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
                   현장 데이터 백업 및 복원
@@ -260,7 +260,7 @@ export default function ProjectSiteManager({
                     }}
                     className={`py-2 px-3 border flex items-center justify-center gap-1.5 transition-all text-[11px] font-black cursor-pointer uppercase ${
                       isHighDensity 
-                        ? 'bg-white text-black border-black hover:bg-[#dfddd6]' 
+                        ? 'bg-white text-black border-black hover:bg-[#dde3ec]' 
                         : 'bg-white text-indigo-700 border-indigo-100 rounded-lg hover:bg-indigo-50 shadow-sm'
                     }`}
                     title="전체 저장된 현장 리스트 전체 백업 (.json)"
@@ -271,7 +271,7 @@ export default function ProjectSiteManager({
                   <label
                     className={`py-2 px-3 border flex items-center justify-center gap-1.5 transition-all text-[11px] font-black cursor-pointer uppercase text-center ${
                       isHighDensity 
-                        ? 'bg-[#141414] text-white border-black hover:bg-black/90' 
+                        ? 'bg-[#0a1220] text-white border-black hover:bg-black/90' 
                         : 'bg-indigo-600 text-white border-transparent rounded-lg hover:bg-indigo-700 shadow-sm'
                     }`}
                     title="내보낸 백업 파일 (.json) 가져와 복원하기"
@@ -305,10 +305,10 @@ export default function ProjectSiteManager({
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               className={`w-full max-w-sm overflow-hidden shadow-2xl ${
-                isHighDensity ? 'bg-white border-2 border-[#141414]' : 'bg-white rounded-2xl'
+                isHighDensity ? 'bg-white border-2 border-[#0a1220]' : 'bg-white rounded-2xl'
               }`}
             >
-              <div className={`px-6 py-4 border-b flex justify-between items-center ${isHighDensity ? 'bg-[#141414] text-white border-[#141414]' : 'bg-slate-50'}`}>
+              <div className={`px-6 py-4 border-b flex justify-between items-center ${isHighDensity ? 'bg-[#0a1220] text-white border-[#0a1220]' : 'bg-slate-50'}`}>
                 <h3 className="text-sm font-bold uppercase tracking-tight">현장 정보 저장</h3>
                 <button onClick={() => setIsNaming(false)}><X size={18} /></button>
               </div>
@@ -322,7 +322,7 @@ export default function ProjectSiteManager({
                   onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleSave()}
                   placeholder="예: 과천 지식정보타운 아파트 공사"
                   className={`w-full px-4 py-3 text-sm font-bold border focus:ring-0 outline-none transition-all text-slate-900 ${
-                    isHighDensity ? 'border-[#141414] rounded-none focus:bg-yellow-50' : 'border-slate-200 rounded-xl focus:border-indigo-500'
+                    isHighDensity ? 'border-[#0a1220] rounded-none focus:bg-yellow-50' : 'border-slate-200 rounded-xl focus:border-indigo-500'
                   }`}
                 />
                 <p className="mt-3 text-[10px] text-slate-500 leading-normal">
@@ -333,7 +333,7 @@ export default function ProjectSiteManager({
                 <button
                   onClick={() => setIsNaming(false)}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg border ${
-                    isHighDensity ? 'border-[#141414]' : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                    isHighDensity ? 'border-[#0a1220]' : 'border-slate-200 text-slate-500 hover:bg-slate-50'
                   }`}
                 >
                   취소
@@ -341,7 +341,7 @@ export default function ProjectSiteManager({
                 <button
                   onClick={handleSave}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg text-white ${
-                    isHighDensity ? 'bg-[#141414] hover:bg-black' : 'bg-indigo-600 hover:bg-indigo-700'
+                    isHighDensity ? 'bg-[#0a1220] hover:bg-black' : 'bg-indigo-600 hover:bg-indigo-700'
                   }`}
                 >
                   저장하기
@@ -366,7 +366,7 @@ export default function ProjectSiteManager({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 10 }}
               className={`w-full max-w-sm overflow-hidden shadow-2xl border-2 ${
-                isHighDensity ? 'bg-white border-[#141414]' : 'bg-white border-red-100 rounded-2xl'
+                isHighDensity ? 'bg-white border-[#0a1220]' : 'bg-white border-red-100 rounded-2xl'
               }`}
             >
               <div className={`px-6 py-4 flex justify-between items-center ${isHighDensity ? 'bg-red-600 text-white border-b-2 border-black' : 'bg-red-50 border-b border-red-100'}`}>
@@ -393,7 +393,7 @@ export default function ProjectSiteManager({
                 <button
                   onClick={() => setProjectToDelete(null)}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg border ${
-                    isHighDensity ? 'border-[#141414] hover:bg-slate-100' : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                    isHighDensity ? 'border-[#0a1220] hover:bg-slate-100' : 'border-slate-200 text-slate-500 hover:bg-slate-50'
                   }`}
                 >
                   보관 (취소)
@@ -431,11 +431,11 @@ export default function ProjectSiteManager({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className={`w-full max-w-sm overflow-hidden shadow-2xl border-2 ${
-                isHighDensity ? 'bg-[#E7E6E1] border-black rounded-none' : 'bg-white border-slate-100 rounded-2xl'
+                isHighDensity ? 'bg-[#E6EAF0] border-black rounded-none' : 'bg-white border-slate-100 rounded-2xl'
               }`}
             >
               <div className={`px-6 py-4 border-b flex justify-between items-center ${
-                isHighDensity ? 'bg-[#141414] text-white border-b-2 border-black' : 'bg-indigo-50 border-b border-indigo-100 text-indigo-900'
+                isHighDensity ? 'bg-[#0a1220] text-white border-b-2 border-black' : 'bg-indigo-50 border-b border-indigo-100 text-indigo-900'
               }`}>
                 <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
                   <Plus size={16} className={isHighDensity ? 'text-yellow-400' : 'text-indigo-600'} />
@@ -455,7 +455,7 @@ export default function ProjectSiteManager({
                   onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleAddNewProjectSubmit()}
                   placeholder="예: 마포 더 클래시 건설현장"
                   className={`w-full px-4 py-3 text-sm font-bold border focus:ring-0 outline-none transition-all text-slate-900 ${
-                    isHighDensity ? 'border-[#141414] rounded-none focus:bg-[#dfddd6]' : 'border-slate-200 rounded-xl focus:border-indigo-500'
+                    isHighDensity ? 'border-[#0a1220] rounded-none focus:bg-[#dde3ec]' : 'border-slate-200 rounded-xl focus:border-indigo-500'
                   }`}
                 />
                 <p className="mt-3 text-[10px] text-slate-500 leading-normal">
@@ -467,7 +467,7 @@ export default function ProjectSiteManager({
                   type="button"
                   onClick={() => setIsAddingNewProject(false)}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg border ${
-                    isHighDensity ? 'border-[#141414] hover:bg-slate-200 text-[#141414] bg-[#E7E6E1]' : 'border-slate-200 text-slate-500 hover:bg-slate-50 bg-white'
+                    isHighDensity ? 'border-[#0a1220] hover:bg-slate-200 text-[#0a1220] bg-[#E6EAF0]' : 'border-slate-200 text-slate-500 hover:bg-slate-50 bg-white'
                   }`}
                 >
                   취소(닫기)
@@ -476,7 +476,7 @@ export default function ProjectSiteManager({
                   type="button"
                   onClick={handleAddNewProjectSubmit}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg text-white ${
-                    isHighDensity ? 'bg-[#141414] hover:bg-black' : 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100'
+                    isHighDensity ? 'bg-[#0a1220] hover:bg-black' : 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100'
                   }`}
                 >
                   현장 추가하기

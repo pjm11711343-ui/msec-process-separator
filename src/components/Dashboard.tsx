@@ -101,21 +101,21 @@ export default function Dashboard({
 
   if (theme === 'high-density') {
     return (
-      <div className="border-b border-[#141414] bg-[#F4F4F2]">
-        <div className="grid grid-cols-3 lg:grid-cols-6 gap-0 border-b border-[#141414] bg-white/50">
-          <div className="p-2.5 border-r border-[#141414]">
+      <div className="border-b border-[#0a1220] bg-[#F3F5F8]">
+        <div className="grid grid-cols-3 lg:grid-cols-6 gap-0 border-b border-[#0a1220] bg-white/50">
+          <div className="p-2.5 border-r border-[#0a1220]">
             <MetadataInput label="착공일" value={metadata.commencementDate} field="commencementDate" placeholder="202X.XX.XX" />
           </div>
-          <div className="p-2.5 border-r border-[#141414]">
+          <div className="p-2.5 border-r border-[#0a1220]">
             <MetadataInput label="준공일" value={metadata.completionDate} field="completionDate" placeholder="202X.XX.XX" />
           </div>
-          <div className="p-2.5 border-r border-[#141414]">
+          <div className="p-2.5 border-r border-[#0a1220]">
             <MetadataInput label="동수" value={metadata.buildingCount} field="buildingCount" placeholder="00개동" />
           </div>
-          <div className="p-2.5 border-r border-[#141414]">
+          <div className="p-2.5 border-r border-[#0a1220]">
             <MetadataInput label="세대수" value={metadata.householdCount} field="householdCount" placeholder="000세대" />
           </div>
-          <div className="p-2.5 border-r border-[#141414]">
+          <div className="p-2.5 border-r border-[#0a1220]">
             <MetadataInput label="최상층" value={metadata.highestFloor} field="highestFloor" placeholder="B0 / 00F" />
           </div>
           <div className="p-2.5 flex items-center justify-between">
@@ -135,8 +135,8 @@ export default function Dashboard({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 border-b border-[#141414]">
-          <div className="p-3.5 border-r border-b lg:border-b-0 border-[#141414] flex flex-col justify-between bg-white">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 border-b border-[#0a1220]">
+          <div className="p-3.5 border-r border-b lg:border-b-0 border-[#0a1220] flex flex-col justify-between bg-white">
             <div className="flex flex-col">
               <span className="text-[10px] uppercase opacity-60 font-black mb-1">총 계약 합계 금액 (TOTAL)</span>
               <span className="text-xl lg:text-2xl font-mono leading-none tracking-tighter italic font-black text-indigo-950">
@@ -155,7 +155,7 @@ export default function Dashboard({
               </div>
             </div>
             
-            <div className="mt-3 pt-2 border-t border-[#141414]/10 grid grid-cols-1 gap-2">
+            <div className="mt-3 pt-2 border-t border-[#0a1220]/10 grid grid-cols-1 gap-2">
               <div className="flex flex-col">
                 <span className="text-[8px] font-black text-slate-400 uppercase leading-none mb-1">재료(직접) / 노무 / 외주</span>
                 <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold leading-none">
@@ -176,7 +176,7 @@ export default function Dashboard({
               </div>
             </div>
           </div>
-          <div className="p-3.5 border-r lg:border-r border-b lg:border-b-0 border-[#141414] flex flex-col justify-between">
+          <div className="p-3.5 border-r lg:border-r border-b lg:border-b-0 border-[#0a1220] flex flex-col justify-between">
             <span className="text-[10px] uppercase opacity-60 font-black mb-1">분리된 공정 수</span>
             <span className="text-xl lg:text-2xl font-mono leading-none italic font-bold">
               {Object.keys(categoryTotals).length} <small className="text-xs opacity-50 font-normal">Categories</small>
@@ -185,7 +185,7 @@ export default function Dashboard({
               재료비 {materialPercent.toFixed(0)}% / 외주 {laborPercent.toFixed(0)}%
             </div>
           </div>
-          <div className="p-3.5 border-r border-[#141414] flex flex-col justify-between">
+          <div className="p-3.5 border-r border-[#0a1220] flex flex-col justify-between">
             <span className="text-[10px] uppercase opacity-60 font-black mb-1">분석 완료 품목</span>
             <span className="text-xl lg:text-2xl font-mono leading-none text-blue-700 italic font-black">
               {items.length} <small className="text-xs font-normal opacity-60">Items</small>
@@ -194,7 +194,7 @@ export default function Dashboard({
               분류 품목: {classifiedItems.length}건
             </div>
           </div>
-          <div className="p-3.5 flex flex-col justify-between bg-white relative group cursor-pointer overflow-hidden border-b lg:border-b-0 border-[#141414]" onClick={onOpenSectionSummary}>
+          <div className="p-3.5 flex flex-col justify-between bg-white relative group cursor-pointer overflow-hidden border-b lg:border-b-0 border-[#0a1220]" onClick={onOpenSectionSummary}>
             <div className="absolute inset-0 bg-yellow-400 -translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
             <div className="relative z-10">
               <span className="text-[10px] uppercase opacity-60 font-black mb-1 group-hover:text-black">공정 상세 분석 리포트</span>
@@ -210,7 +210,7 @@ export default function Dashboard({
         </div>
         
         {/* Category breakdown row for High Density */}
-        <div className="flex overflow-x-auto bg-white/40 backdrop-blur-xs divide-x divide-[#141414]">
+        <div className="flex overflow-x-auto bg-white/40 backdrop-blur-xs divide-x divide-[#0a1220]">
           {chartData.slice(0, 8).map((cat) => (
             <div key={cat.name} className="flex-1 min-w-[170px] p-2.5 flex flex-col justify-between hover:bg-white transition-colors">
               <span className="text-[10px] font-bold text-slate-600 truncate mb-1 uppercase tracking-tight">

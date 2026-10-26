@@ -117,8 +117,9 @@ export default function SiteListSidebar({
     e.target.value = '';
   };
 
-  const isHighDensity = theme === 'high-density';
-  const isIndustrial = theme === 'industrial';
+  // 하이 덴시티 사이드바는 네이비(#0a1220) + 앰버(#e8a33d) 어두운 스타일
+  const isHighDensity = false;
+  const isIndustrial = theme === 'industrial' || theme === 'high-density';
 
   // Format timestamp helper
   const formatDate = (timestamp?: number) => {
@@ -137,7 +138,7 @@ export default function SiteListSidebar({
       {isMobileOpen && (
         <div
           onClick={onCloseMobile}
-          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-xs lg:hidden"
+          className="fixed inset-0 z-40 bg-[#0a1220]/60 backdrop-blur-xs lg:hidden"
         />
       )}
 
@@ -146,9 +147,9 @@ export default function SiteListSidebar({
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${
           isIndustrial
-            ? 'bg-slate-900 border-slate-800 text-slate-100'
+            ? 'bg-[#0a1220] border-[#1c2b42] text-slate-100'
             : isHighDensity
-            ? 'bg-[#EBEAE8] border-[#141414] text-[#141414]'
+            ? 'bg-[#ECEFF3] border-[#0a1220] text-[#0a1220]'
             : 'bg-white border-slate-200 text-slate-800 shadow-sm'
         }`}
       >
@@ -156,9 +157,9 @@ export default function SiteListSidebar({
         <div
           className={`p-4 border-b flex items-center justify-between ${
             isIndustrial
-              ? 'border-slate-800 bg-slate-950/60'
+              ? 'border-[#1c2b42] bg-[#070d18]/60'
               : isHighDensity
-              ? 'border-[#141414] bg-[#141414] text-white'
+              ? 'border-[#0a1220] bg-[#0a1220] text-white'
               : 'border-slate-100 bg-slate-50/70'
           }`}
         >
@@ -166,7 +167,7 @@ export default function SiteListSidebar({
             <div
               className={`p-2 rounded-xl flex items-center justify-center ${
                 isIndustrial
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                  ? 'bg-[#e8a33d]/20 text-[#f0b85a] border border-[#e8a33d]/30'
                   : isHighDensity
                   ? 'bg-white text-black'
                   : 'bg-indigo-600 text-white shadow-sm'
@@ -180,7 +181,7 @@ export default function SiteListSidebar({
                 <span
                   className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-bold uppercase ${
                     isIndustrial
-                      ? 'bg-amber-500/20 text-amber-300'
+                      ? 'bg-[#e8a33d]/20 text-amber-300'
                       : isHighDensity
                       ? 'bg-yellow-400 text-black'
                       : 'bg-indigo-50 text-indigo-700'
@@ -205,10 +206,10 @@ export default function SiteListSidebar({
               <button
                 type="button"
                 onClick={onOpenQuotaModal}
-                className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono border bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300 cursor-pointer transition-colors"
+                className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono border bg-[#e8a33d]/20 hover:bg-[#e8a33d]/30 border-[#e8a33d]/40 text-amber-300 cursor-pointer transition-colors"
                 title="Firestore 무료 일일 할당량 도달 - 안전한 로컬 저장소 모드 (클릭하여 안내 보기)"
               >
-                <Cloud size={12} className="text-amber-400" />
+                <Cloud size={12} className="text-[#f0b85a]" />
                 <span className="text-[10px] font-medium hidden sm:inline text-amber-300">
                   로컬모드
                 </span>
@@ -217,7 +218,7 @@ export default function SiteListSidebar({
               <div
                 className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-mono border ${
                   isIndustrial
-                    ? 'bg-slate-800/80 border-slate-700 text-slate-300'
+                    ? 'bg-[#14223a]/80 border-[#24364f] text-slate-300'
                     : isHighDensity
                     ? 'bg-white/10 border-white/20 text-white'
                     : 'bg-white border-slate-200 text-slate-600 shadow-xs'
@@ -228,7 +229,7 @@ export default function SiteListSidebar({
                   size={12}
                   className={
                     cloudSyncStatus === 'syncing'
-                      ? 'text-amber-400 animate-spin'
+                      ? 'text-[#f0b85a] animate-spin'
                       : cloudSyncStatus === 'error'
                       ? 'text-rose-500'
                       : 'text-emerald-500'
@@ -254,7 +255,7 @@ export default function SiteListSidebar({
         </div>
 
       {/* Main Views Navigation */}
-      <div className={`p-3 border-b space-y-1 ${isIndustrial ? 'border-slate-800' : isHighDensity ? 'border-[#141414]' : 'border-slate-100'}`}>
+      <div className={`p-3 border-b space-y-1 ${isIndustrial ? 'border-[#1c2b42]' : isHighDensity ? 'border-[#0a1220]' : 'border-slate-100'}`}>
         <div className="grid grid-cols-3 gap-1">
           <button
             type="button"
@@ -262,12 +263,12 @@ export default function SiteListSidebar({
             className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
               activeTab === 'list'
                 ? isIndustrial
-                  ? 'bg-amber-500 text-black shadow-md'
+                  ? 'bg-[#e8a33d] text-black shadow-md'
                   : isHighDensity
-                  ? 'bg-[#141414] text-white'
+                  ? 'bg-[#0a1220] text-white'
                   : 'bg-indigo-600 text-white shadow-sm'
                 : isIndustrial
-                ? 'bg-slate-800/60 hover:bg-slate-800 text-slate-300'
+                ? 'bg-[#14223a]/60 hover:bg-[#14223a] text-slate-300'
                 : isHighDensity
                 ? 'bg-white/60 hover:bg-white text-black'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
@@ -283,12 +284,12 @@ export default function SiteListSidebar({
             className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
               activeTab === 'matrix'
                 ? isIndustrial
-                  ? 'bg-amber-500 text-black shadow-md'
+                  ? 'bg-[#e8a33d] text-black shadow-md'
                   : isHighDensity
-                  ? 'bg-[#141414] text-white'
+                  ? 'bg-[#0a1220] text-white'
                   : 'bg-indigo-600 text-white shadow-sm'
                 : isIndustrial
-                ? 'bg-slate-800/60 hover:bg-slate-800 text-slate-300'
+                ? 'bg-[#14223a]/60 hover:bg-[#14223a] text-slate-300'
                 : isHighDensity
                 ? 'bg-white/60 hover:bg-white text-black'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
@@ -304,12 +305,12 @@ export default function SiteListSidebar({
             className={`flex flex-col items-center justify-center gap-1 py-2 px-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
               activeTab === 'analysis'
                 ? isIndustrial
-                  ? 'bg-amber-500 text-black shadow-md'
+                  ? 'bg-[#e8a33d] text-black shadow-md'
                   : isHighDensity
-                  ? 'bg-[#141414] text-white'
+                  ? 'bg-[#0a1220] text-white'
                   : 'bg-indigo-600 text-white shadow-sm'
                 : isIndustrial
-                ? 'bg-slate-800/60 hover:bg-slate-800 text-slate-300'
+                ? 'bg-[#14223a]/60 hover:bg-[#14223a] text-slate-300'
                 : isHighDensity
                 ? 'bg-white/60 hover:bg-white text-black'
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
@@ -326,19 +327,19 @@ export default function SiteListSidebar({
       <div
         className={`px-3.5 py-2.5 border-b flex items-center justify-between ${
           isIndustrial
-            ? 'bg-slate-950/40 border-slate-800 text-slate-300'
+            ? 'bg-[#070d18]/40 border-[#1c2b42] text-slate-300'
             : isHighDensity
-            ? 'bg-[#E0DFDC] border-[#141414] text-[#141414]'
+            ? 'bg-[#E0DFDC] border-[#0a1220] text-[#0a1220]'
             : 'bg-slate-50/80 border-slate-100 text-slate-600'
         }`}
       >
         <div className="flex items-center gap-1.5">
-          <Building2 size={15} className={isIndustrial ? 'text-amber-400' : isHighDensity ? 'text-black' : 'text-indigo-600'} />
+          <Building2 size={15} className={isIndustrial ? 'text-[#f0b85a]' : isHighDensity ? 'text-black' : 'text-indigo-600'} />
           <span className="text-xs font-extrabold tracking-tight">현장 목록</span>
           <span
             className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
               isIndustrial
-                ? 'bg-slate-800 text-amber-400 border border-slate-700'
+                ? 'bg-[#14223a] text-[#f0b85a] border border-[#24364f]'
                 : isHighDensity
                 ? 'bg-white text-black border border-black/20'
                 : 'bg-indigo-100 text-indigo-800'
@@ -353,9 +354,9 @@ export default function SiteListSidebar({
           onClick={() => setIsAddingNew(true)}
           className={`flex items-center gap-1 px-2 py-1 rounded text-[11px] font-bold transition-all cursor-pointer ${
             isIndustrial
-              ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40'
+              ? 'bg-[#e8a33d]/20 hover:bg-[#e8a33d]/30 text-amber-300 border border-[#e8a33d]/40'
               : isHighDensity
-              ? 'bg-[#141414] hover:bg-black text-white'
+              ? 'bg-[#0a1220] hover:bg-black text-white'
               : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/60'
           }`}
           title="신규 현장 추가"
@@ -366,13 +367,13 @@ export default function SiteListSidebar({
       </div>
 
       {/* Search Input Filter */}
-      <div className={`p-2.5 border-b ${isIndustrial ? 'border-slate-800' : isHighDensity ? 'border-[#141414]' : 'border-slate-100'}`}>
+      <div className={`p-2.5 border-b ${isIndustrial ? 'border-[#1c2b42]' : isHighDensity ? 'border-[#0a1220]' : 'border-slate-100'}`}>
         <div
           className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg border text-xs ${
             isIndustrial
-              ? 'bg-slate-950 border-slate-800 text-slate-200 focus-within:border-amber-500/60'
+              ? 'bg-[#070d18] border-[#1c2b42] text-slate-200 focus-within:border-[#e8a33d]/60'
               : isHighDensity
-              ? 'bg-white border-[#141414] text-black focus-within:bg-yellow-50/50'
+              ? 'bg-white border-[#0a1220] text-black focus-within:bg-yellow-50/50'
               : 'bg-slate-50 border-slate-200 text-slate-800 focus-within:border-indigo-500 focus-within:bg-white'
           }`}
         >
@@ -402,9 +403,9 @@ export default function SiteListSidebar({
             onSubmit={handleAddNewSubmit}
             className={`p-3 border-b overflow-hidden ${
               isIndustrial
-                ? 'bg-amber-500/10 border-amber-500/30'
+                ? 'bg-[#e8a33d]/10 border-[#e8a33d]/30'
                 : isHighDensity
-                ? 'bg-yellow-100 border-[#141414]'
+                ? 'bg-yellow-100 border-[#0a1220]'
                 : 'bg-indigo-50/70 border-indigo-100'
             }`}
           >
@@ -428,9 +429,9 @@ export default function SiteListSidebar({
               placeholder="예: 마포 웰스트림 아파트"
               className={`w-full px-2.5 py-1.5 text-xs font-bold rounded border outline-none mb-2 ${
                 isIndustrial
-                  ? 'bg-slate-950 border-amber-500/40 text-white focus:border-amber-400'
+                  ? 'bg-[#070d18] border-[#e8a33d]/40 text-white focus:border-[#f0b85a]'
                   : isHighDensity
-                  ? 'bg-white border-[#141414] text-black'
+                  ? 'bg-white border-[#0a1220] text-black'
                   : 'bg-white border-indigo-200 text-slate-900 focus:border-indigo-500'
               }`}
             />
@@ -449,7 +450,7 @@ export default function SiteListSidebar({
                   !newSiteName.trim() ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
                 } ${
                   isIndustrial
-                    ? 'bg-amber-600 hover:bg-amber-500'
+                    ? 'bg-amber-600 hover:bg-[#e8a33d]'
                     : isHighDensity
                     ? 'bg-black text-white'
                     : 'bg-indigo-600 hover:bg-indigo-700'
@@ -492,14 +493,14 @@ export default function SiteListSidebar({
                 className={`group relative p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
                   isCurrent
                     ? isIndustrial
-                      ? 'bg-amber-500/15 border-amber-500/70 text-white shadow-sm ring-1 ring-amber-500/30'
+                      ? 'bg-[#e8a33d]/15 border-[#e8a33d]/70 text-white shadow-sm ring-1 ring-[#e8a33d]/30'
                       : isHighDensity
-                      ? 'bg-white border-2 border-[#141414] text-black shadow-md'
+                      ? 'bg-white border-2 border-[#0a1220] text-black shadow-md'
                       : 'bg-indigo-50/90 border-indigo-400 text-indigo-950 shadow-xs ring-1 ring-indigo-300'
                     : isIndustrial
-                    ? 'bg-slate-950/50 hover:bg-slate-800/80 border-slate-800/80 text-slate-300'
+                    ? 'bg-[#070d18]/50 hover:bg-[#14223a]/80 border-[#1c2b42]/80 text-slate-300'
                     : isHighDensity
-                    ? 'bg-white/40 hover:bg-white border-[#141414]/30 text-[#141414]'
+                    ? 'bg-white/40 hover:bg-white border-[#0a1220]/30 text-[#0a1220]'
                     : 'bg-white hover:bg-slate-50/90 border-slate-200/80 text-slate-700 hover:border-slate-300'
                 }`}
               >
@@ -507,7 +508,7 @@ export default function SiteListSidebar({
                 {isCurrent && (
                   <div
                     className={`absolute left-0 top-2 bottom-2 w-1 rounded-r ${
-                      isIndustrial ? 'bg-amber-500' : isHighDensity ? 'bg-black' : 'bg-indigo-600'
+                      isIndustrial ? 'bg-[#e8a33d]' : isHighDensity ? 'bg-black' : 'bg-indigo-600'
                     }`}
                   />
                 )}
@@ -531,7 +532,7 @@ export default function SiteListSidebar({
                       </span>
                       {isCompleted ? (
                         <span
-                          className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-600 border border-amber-500/30"
+                          className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#e8a33d]/20 text-amber-600 border border-[#e8a33d]/30"
                           title="내역분리 완료 (마감)"
                         >
                           <Lock size={9} />
@@ -591,7 +592,7 @@ export default function SiteListSidebar({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-[#0a1220]/60 backdrop-blur-xs"
             onClick={() => setSiteToDelete(null)}
           >
             <motion.div
@@ -601,7 +602,7 @@ export default function SiteListSidebar({
               onClick={(e) => e.stopPropagation()}
               className={`w-full max-w-xs p-5 rounded-2xl shadow-2xl border ${
                 isIndustrial
-                  ? 'bg-slate-900 border-slate-800 text-white'
+                  ? 'bg-[#0a1220] border-[#1c2b42] text-white'
                   : isHighDensity
                   ? 'bg-white border-2 border-black text-black'
                   : 'bg-white border-slate-200 text-slate-800'
@@ -642,9 +643,9 @@ export default function SiteListSidebar({
       <div
         className={`p-3 border-t space-y-1.5 ${
           isIndustrial
-            ? 'border-slate-800 bg-slate-950/70'
+            ? 'border-[#1c2b42] bg-[#070d18]/70'
             : isHighDensity
-            ? 'border-[#141414] bg-[#E0DFDC]'
+            ? 'border-[#0a1220] bg-[#E0DFDC]'
             : 'border-slate-100 bg-slate-50/70'
         }`}
       >
@@ -654,9 +655,9 @@ export default function SiteListSidebar({
             onClick={onOpenComparison}
             className={`col-span-2 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-[11px] font-black border transition-all cursor-pointer ${
               isIndustrial
-                ? 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-300'
+                ? 'bg-[#e8a33d]/10 hover:bg-[#e8a33d]/20 border-[#e8a33d]/30 text-amber-300'
                 : isHighDensity
-                ? 'bg-white hover:bg-black/5 border-[#141414] text-black'
+                ? 'bg-white hover:bg-black/5 border-[#0a1220] text-black'
                 : 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-700 shadow-sm'
             }`}
           >
@@ -668,9 +669,9 @@ export default function SiteListSidebar({
             onClick={() => onOpenCategoryManager('categories')}
             className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
               isIndustrial
-                ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-300'
+                ? 'bg-[#0a1220] hover:bg-[#14223a] border-[#1c2b42] text-slate-300'
                 : isHighDensity
-                ? 'bg-white hover:bg-black/5 border-[#141414] text-black'
+                ? 'bg-white hover:bg-black/5 border-[#0a1220] text-black'
                 : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-xs'
             }`}
           >
@@ -682,9 +683,9 @@ export default function SiteListSidebar({
             onClick={() => onOpenCategoryManager('rules')}
             className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
               isIndustrial
-                ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-300'
+                ? 'bg-[#0a1220] hover:bg-[#14223a] border-[#1c2b42] text-slate-300'
                 : isHighDensity
-                ? 'bg-white hover:bg-black/5 border-[#141414] text-black'
+                ? 'bg-white hover:bg-black/5 border-[#0a1220] text-black'
                 : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-xs'
             }`}
           >
@@ -699,9 +700,9 @@ export default function SiteListSidebar({
             onClick={onOpenSettings}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
               isIndustrial
-                ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-300'
+                ? 'bg-[#0a1220] hover:bg-[#14223a] border-[#1c2b42] text-slate-300'
                 : isHighDensity
-                ? 'bg-white hover:bg-black/5 border-[#141414] text-black'
+                ? 'bg-white hover:bg-black/5 border-[#0a1220] text-black'
                 : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-xs'
             }`}
           >
@@ -714,9 +715,9 @@ export default function SiteListSidebar({
             onClick={onResetTheme}
             className={`flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
               isIndustrial
-                ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-400 hover:text-slate-200'
+                ? 'bg-[#0a1220] hover:bg-[#14223a] border-[#1c2b42] text-slate-400 hover:text-slate-200'
                 : isHighDensity
-                ? 'bg-[#141414] text-white hover:bg-black'
+                ? 'bg-[#0a1220] text-white hover:bg-black'
                 : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-500 shadow-xs'
             }`}
             title="양식 템플릿 다시 선택"
@@ -731,9 +732,9 @@ export default function SiteListSidebar({
             onClick={onExportBackup}
             className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
               isIndustrial
-                ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-400 hover:text-white'
+                ? 'bg-[#0a1220] hover:bg-[#14223a] border-[#1c2b42] text-slate-400 hover:text-white'
                 : isHighDensity
-                ? 'bg-white hover:bg-black/5 border-[#141414] text-black'
+                ? 'bg-white hover:bg-black/5 border-[#0a1220] text-black'
                 : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-500 shadow-xs'
             }`}
             title="전체 현장 JSON 백업 내보내기"
@@ -744,9 +745,9 @@ export default function SiteListSidebar({
           <label
             className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
               isIndustrial
-                ? 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-400 hover:text-white'
+                ? 'bg-[#0a1220] hover:bg-[#14223a] border-[#1c2b42] text-slate-400 hover:text-white'
                 : isHighDensity
-                ? 'bg-white hover:bg-black/5 border-[#141414] text-black'
+                ? 'bg-white hover:bg-black/5 border-[#0a1220] text-black'
                 : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-500 shadow-xs'
             }`}
             title="백업 JSON 파일 불러오기"

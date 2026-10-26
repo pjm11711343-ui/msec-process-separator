@@ -62,8 +62,8 @@ export default function SectionSummaryCards({ items, theme, onClose }: Props) {
   const content = (
     <div className={onClose ? "max-h-[85vh] overflow-y-auto p-1" : ""}>
       {theme === 'high-density' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-0 border border-[#141414] bg-[#EBEAE8]">
-          <div className="col-span-full bg-[#141414] text-white px-4 py-1.5 flex items-center justify-between">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-0 border border-[#0a1220] bg-[#ECEFF3]">
+          <div className="col-span-full bg-[#0a1220] text-white px-4 py-1.5 flex items-center justify-between">
             <span className="text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
               <LayoutGrid size={12} />
               공정별 예산 배분 상세 요약 (Section Analysis)
@@ -71,7 +71,7 @@ export default function SectionSummaryCards({ items, theme, onClose }: Props) {
             <span className="text-[11px] opacity-60">Total: ₩{totalProjectAmount.toLocaleString()}</span>
           </div>
           {sectionData.map((section, idx) => (
-            <div key={section.name} className={`p-3 border-r border-b border-[#141414] flex flex-col bg-white hover:bg-[#F9F9F9] transition-colors`}>
+            <div key={section.name} className={`p-3 border-r border-b border-[#0a1220] flex flex-col bg-white hover:bg-[#F9F9F9] transition-colors`}>
               <div className="flex justify-between items-start mb-2">
                 <div className="flex flex-col">
                   <span className="text-[9px] font-black text-blue-600 uppercase mb-0.5">SECTION {idx + 1}</span>
@@ -92,7 +92,7 @@ export default function SectionSummaryCards({ items, theme, onClose }: Props) {
               </div>
               
               <div className="space-y-1.5 mt-auto">
-                <div className="flex justify-between items-center bg-[#F2F2F2] px-1.5 py-0.5 border-l-2 border-[#141414]">
+                <div className="flex justify-between items-center bg-[#F2F2F2] px-1.5 py-0.5 border-l-2 border-[#0a1220]">
                   <span className="text-[11px] font-black uppercase">분류별 배분 (Category Split)</span>
                   <span className="text-[11px] font-mono">{section.itemCount} items</span>
                 </div>
@@ -204,9 +204,9 @@ export default function SectionSummaryCards({ items, theme, onClose }: Props) {
       <motion.div 
         initial={{ scale: 0.95, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        className={`w-full max-w-6xl overflow-hidden shadow-2xl relative ${theme === 'high-density' ? 'bg-[#E7E6E1] border-2 border-[#141414] rounded-none' : 'bg-slate-50 border border-slate-200 rounded-2xl'}`}
+        className={`w-full max-w-6xl overflow-hidden shadow-2xl relative ${theme === 'high-density' ? 'bg-[#E6EAF0] border-2 border-[#0a1220] rounded-none' : 'bg-slate-50 border border-slate-200 rounded-2xl'}`}
       >
-        <div className={`flex items-center justify-between px-6 py-4 border-b ${theme === 'high-density' ? 'bg-[#141414] text-white border-[#141414]' : 'bg-white border-slate-200'}`}>
+        <div className={`flex items-center justify-between px-6 py-4 border-b ${theme === 'high-density' ? 'bg-[#0a1220] text-white border-[#0a1220]' : 'bg-white border-slate-200'}`}>
           <div className="flex items-center gap-3">
             <LayoutGrid size={20} />
             <h3 className={`text-lg font-bold tracking-tight ${theme === 'high-density' ? 'uppercase font-black' : ''}`}>
@@ -223,10 +223,10 @@ export default function SectionSummaryCards({ items, theme, onClose }: Props) {
         <div className="p-6">
           {content}
         </div>
-        <div className={`px-6 py-4 border-t flex justify-end ${theme === 'high-density' ? 'bg-[#F2F2F2] border-[#141414]' : 'bg-white border-slate-200'}`}>
+        <div className={`px-6 py-4 border-t flex justify-end ${theme === 'high-density' ? 'bg-[#F2F2F2] border-[#0a1220]' : 'bg-white border-slate-200'}`}>
            <button 
              onClick={onClose}
-             className={`px-6 py-2 font-bold transition-all ${theme === 'high-density' ? 'bg-[#141414] text-white hover:bg-black uppercase text-xs' : 'bg-slate-900 text-white rounded-lg hover:bg-slate-800'}`}
+             className={`px-6 py-2 font-bold transition-all ${theme === 'high-density' ? 'bg-[#0a1220] text-white hover:bg-black uppercase text-xs' : 'bg-slate-900 text-white rounded-lg hover:bg-slate-800'}`}
            >
              창 닫기
            </button>

@@ -311,7 +311,10 @@ async function decompressState(encoded: string): Promise<any> {
 import ProjectComparisonModal from './components/ProjectComparisonModal.tsx';
 
 export default function App() {
-  const [theme, setTheme] = useState<ThemeType | null>(null);
+  // 기본 테마: 하이 덴시티 (인더스트리얼 테마는 없어졌으므로 예전 현장의 industrial 도 하이 덴시티로 표시)
+  const [themeRaw, setThemeRaw] = useState<ThemeType | null>('high-density');
+  const theme = (themeRaw === 'industrial' ? 'high-density' : themeRaw) as ThemeType | null;
+  const setTheme = (t: ThemeType | null) => setThemeRaw(t === 'industrial' ? 'high-density' : t);
   const [fontFamily, setFontFamily] = useState<string>('"Gulim", "굴림", Dotum, "돋움", sans-serif');
   const [fontSize, setFontSize] = useState<number>(11);
   const [items, setItems] = useState<SpecItem[]>([]);
@@ -1337,8 +1340,8 @@ export default function App() {
         id: newProjId,
         name: currentProjectName,
         items,
-        theme: theme || 'industrial',
-        config: { theme: theme || 'industrial', fontFamily, fontSize },
+        theme: theme || 'high-density',
+        config: { theme: theme || 'high-density', fontFamily, fontSize },
         categories,
         categoryEstimates,
         ...projectMetadata,
@@ -1458,7 +1461,6 @@ export default function App() {
     }
     
     setItems([]);
-    setTheme(null);
     setWorkbook(null);
     setCurrentProjectName('');
     setCategoryEstimates({});
@@ -1508,9 +1510,9 @@ export default function App() {
       id: newProjId,
       name: name.trim(),
       items: [],
-      theme: theme || 'industrial',
+      theme: theme || 'high-density',
       config: {
-        theme: theme || 'industrial',
+        theme: theme || 'high-density',
         fontFamily,
         fontSize
       },
@@ -1527,7 +1529,7 @@ export default function App() {
     });
 
     setItems([]);
-    setTheme(theme || 'industrial');
+    setTheme(theme || 'high-density');
     setWorkbook(null);
     setCurrentProjectName(name.trim());
     setCategoryEstimates({});
@@ -1539,7 +1541,7 @@ export default function App() {
     await saveActiveSessionToFirestore({
       projectName: name.trim(),
       items: [],
-      theme: theme || 'industrial',
+      theme: theme || 'high-density',
       fontFamily,
       fontSize,
       categories: currentActiveCategories,
@@ -2303,9 +2305,9 @@ export default function App() {
   const renderHeader = () => {
     if (theme === 'high-density') {
       return (
-        <header className="flex items-center justify-between px-6 py-3 bg-[#141414] text-white">
+        <header className="flex items-center justify-between px-6 py-3 bg-[#0a1220] text-white">
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 bg-[#3B82F6] flex items-center justify-center font-bold text-lg rounded-sm">M</div>
+            <div className="w-8 h-8 bg-[#e8a33d] text-[#0a1220] flex items-center justify-center font-black text-lg rounded-sm">M</div>
             <h1 className="text-sm font-semibold tracking-widest uppercase truncate max-w-[200px]">기계설비 공정분리 툴 v4.0</h1>
             
             <div className="h-6 w-px bg-white/20 mx-1" />
@@ -2643,7 +2645,7 @@ export default function App() {
     industrial: 'bg-slate-950 text-slate-100',
     modern: 'bg-slate-50 text-slate-900',
     minimal: 'bg-zinc-50 text-zinc-900',
-    'high-density': 'bg-[#F4F4F2] text-[#141414] font-sans'
+    'high-density': 'bg-[#F3F5F8] text-[#0a1220] font-sans'
   }[theme];
 
   return (
@@ -2662,11 +2664,11 @@ export default function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className={`w-full max-w-sm overflow-hidden shadow-2xl border-2 ${
-                theme === 'high-density' ? 'bg-[#E7E6E1] border-[#141414] rounded-none' : 'bg-white border-slate-100 rounded-2xl'
+                theme === 'high-density' ? 'bg-[#E6EAF0] border-[#0a1220] rounded-none' : 'bg-white border-slate-100 rounded-2xl'
               }`}
             >
               <div className={`px-6 py-4 border-b flex justify-between items-center ${
-                theme === 'high-density' ? 'bg-[#141414] text-white border-b-2 border-black' : 'bg-indigo-50 border-b border-indigo-100 text-indigo-900'
+                theme === 'high-density' ? 'bg-[#0a1220] text-white border-b-2 border-black' : 'bg-indigo-50 border-b border-indigo-100 text-indigo-900'
               }`}>
                 <div className="flex items-center gap-2">
                   <Lock size={16} className={theme === 'high-density' ? 'text-yellow-400' : 'text-indigo-600'} />
@@ -2699,7 +2701,7 @@ export default function App() {
                     onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleVerifyPassword()}
                     placeholder="숫자 4자리를 입력하세요"
                     className={`w-full text-center tracking-widest text-lg font-black py-2.5 border focus:ring-0 outline-none transition-all text-slate-900 ${
-                      theme === 'high-density' ? 'border-[#141414] rounded-none focus:bg-[#dfddd6]' : 'border-slate-200 rounded-xl focus:border-indigo-500'
+                      theme === 'high-density' ? 'border-[#0a1220] rounded-none focus:bg-[#dde3ec]' : 'border-slate-200 rounded-xl focus:border-indigo-500'
                     }`}
                   />
                   <p className="mt-2 text-[9px] text-zinc-400 text-center font-mono">가이드: 비밀번호는 '4714' 입니다.</p>
@@ -2710,7 +2712,7 @@ export default function App() {
                   type="button"
                   onClick={() => setIsPasswordModalOpen(false)}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg border ${
-                    theme === 'high-density' ? 'border-[#141414] hover:bg-slate-200 text-[#141414] bg-[#E7E6E1]' : 'border-slate-200 text-slate-500 hover:bg-slate-50 bg-white'
+                    theme === 'high-density' ? 'border-[#0a1220] hover:bg-slate-200 text-[#0a1220] bg-[#E6EAF0]' : 'border-slate-200 text-slate-500 hover:bg-slate-50 bg-white'
                   }`}
                 >
                   취소(닫기)
@@ -2719,7 +2721,7 @@ export default function App() {
                   type="button"
                   onClick={handleVerifyPassword}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg text-white ${
-                    theme === 'high-density' ? 'bg-[#141414] hover:bg-black' : 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100'
+                    theme === 'high-density' ? 'bg-[#0a1220] hover:bg-black' : 'bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100'
                   }`}
                 >
                   잠금 해제
@@ -2863,7 +2865,7 @@ export default function App() {
               transition={{ type: 'spring', duration: 0.4 }}
               className={`w-full max-w-lg rounded-2xl shadow-2xl border overflow-hidden relative ${
                 theme === 'industrial' ? 'bg-slate-900 border-slate-800 text-slate-100' :
-                theme === 'high-density' ? 'bg-[#F4F4F2] border-[#141414] text-[#141414]' :
+                theme === 'high-density' ? 'bg-[#F3F5F8] border-[#0a1220] text-[#0a1220]' :
                 'bg-white border-slate-200 text-slate-800'
               }`}
               onClick={(e) => e.stopPropagation()}
@@ -2871,13 +2873,13 @@ export default function App() {
               {/* Header */}
               <div className={`p-6 pb-4 border-b flex items-center justify-between ${
                 theme === 'industrial' ? 'border-slate-800' :
-                theme === 'high-density' ? 'border-[#141414] bg-[#EBEAE8]' :
+                theme === 'high-density' ? 'border-[#0a1220] bg-[#ECEFF3]' :
                 'border-slate-100 bg-slate-50'
               }`}>
                 <div className="flex items-center gap-2.5">
                   <div className={`p-2 rounded-lg ${
                     theme === 'industrial' ? 'bg-amber-500/10 text-amber-500' :
-                    theme === 'high-density' ? 'bg-[#141414] text-white' :
+                    theme === 'high-density' ? 'bg-[#0a1220] text-white' :
                     'bg-amber-100 text-amber-600'
                   }`}>
                     <Share2 size={20} />
@@ -2895,7 +2897,7 @@ export default function App() {
                   onClick={() => setIsShareModalOpen(false)}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                     theme === 'industrial' ? 'hover:bg-slate-800 text-slate-400' :
-                    theme === 'high-density' ? 'hover:bg-black/10 text-[#141414]' :
+                    theme === 'high-density' ? 'hover:bg-black/10 text-[#0a1220]' :
                     'hover:bg-slate-100 text-slate-400 hover:text-slate-600'
                   }`}
                 >
@@ -2917,7 +2919,7 @@ export default function App() {
                   </label>
                   <div className={`flex gap-2 p-2 border rounded-xl items-center ${
                     theme === 'industrial' ? 'border-slate-800 bg-slate-950' :
-                    theme === 'high-density' ? 'border-[#141414] bg-white text-xs' :
+                    theme === 'high-density' ? 'border-[#0a1220] bg-white text-xs' :
                     'border-slate-200 bg-slate-50'
                   }`}>
                     <input
@@ -2938,7 +2940,7 @@ export default function App() {
                         copied
                           ? 'bg-green-600 text-white'
                           : theme === 'industrial' ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700' :
-                            theme === 'high-density' ? 'bg-[#141414] text-white hover:opacity-90' :
+                            theme === 'high-density' ? 'bg-[#0a1220] text-white hover:opacity-90' :
                             'bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 shadow-sm'
                       }`}
                     >
@@ -2960,7 +2962,7 @@ export default function App() {
                 {/* Stats */}
                 <div className={`p-4 rounded-xl flex items-center justify-between border ${
                   theme === 'industrial' ? 'bg-slate-950/40 border-slate-800/80' :
-                  theme === 'high-density' ? 'border-[#141414]/30 bg-[#EBEAE8]' :
+                  theme === 'high-density' ? 'border-[#0a1220]/30 bg-[#ECEFF3]' :
                   'bg-indigo-50/40 border-indigo-100/60'
                 }`}>
                   <div className="space-y-0.5">
@@ -2987,14 +2989,14 @@ export default function App() {
               {/* Footer */}
               <div className={`p-4 border-t flex justify-end gap-2 ${
                 theme === 'industrial' ? 'border-slate-800' :
-                theme === 'high-density' ? 'border-[#141414] bg-[#EBEAE8]' :
+                theme === 'high-density' ? 'border-[#0a1220] bg-[#ECEFF3]' :
                 'border-slate-100 bg-slate-50'
               }`}>
                 <button
                   onClick={() => setIsShareModalOpen(false)}
                   className={`px-4 py-2 text-sm font-bold rounded-xl transition-colors cursor-pointer ${
                     theme === 'industrial' ? 'bg-slate-800 hover:bg-slate-700 text-slate-200' :
-                    theme === 'high-density' ? 'border border-[#141414] hover:bg-black/5 text-[#141414]' :
+                    theme === 'high-density' ? 'border border-[#0a1220] hover:bg-black/5 text-[#0a1220]' :
                     'bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 shadow-sm'
                   }`}
                 >
@@ -3022,7 +3024,7 @@ export default function App() {
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               className={`w-full max-w-lg rounded-2xl shadow-2xl border overflow-hidden relative ${
                 theme === 'industrial' ? 'bg-slate-900 border-slate-800 text-slate-100' :
-                theme === 'high-density' ? 'bg-[#F4F4F2] border-2 border-[#141414] text-[#141414]' :
+                theme === 'high-density' ? 'bg-[#F3F5F8] border-2 border-[#0a1220] text-[#0a1220]' :
                 'bg-white border-slate-200 text-slate-800'
               }`}
               onClick={(e) => e.stopPropagation()}
@@ -3030,7 +3032,7 @@ export default function App() {
               {/* Header */}
               <div className={`p-6 pb-4 border-b flex items-center justify-between ${
                 theme === 'industrial' ? 'border-slate-800 bg-slate-950/60' :
-                theme === 'high-density' ? 'border-[#141414] bg-[#EBEAE8]' :
+                theme === 'high-density' ? 'border-[#0a1220] bg-[#ECEFF3]' :
                 'border-slate-100 bg-amber-50/60'
               }`}>
                 <div className="flex items-center gap-3">
@@ -3099,7 +3101,7 @@ export default function App() {
               {/* Footer */}
               <div className={`p-4 border-t flex justify-end gap-2 ${
                 theme === 'industrial' ? 'border-slate-800' :
-                theme === 'high-density' ? 'border-[#141414] bg-[#EBEAE8]' :
+                theme === 'high-density' ? 'border-[#0a1220] bg-[#ECEFF3]' :
                 'border-slate-100 bg-slate-50'
               }`}>
                 <button
@@ -3129,11 +3131,11 @@ export default function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className={`w-full max-w-sm overflow-hidden shadow-2xl relative ${
-                theme === 'high-density' ? 'bg-white border-2 border-[#141414]' : 'bg-white rounded-2xl border border-slate-100'
+                theme === 'high-density' ? 'bg-white border-2 border-[#0a1220]' : 'bg-white rounded-2xl border border-slate-100'
               }`}
             >
               <div className={`px-6 py-4 border-b flex justify-between items-center ${
-                theme === 'high-density' ? 'bg-[#141414] text-white border-[#141414]' : 'bg-slate-50'
+                theme === 'high-density' ? 'bg-[#0a1220] text-white border-[#0a1220]' : 'bg-slate-50'
               }`}>
                 <div className="flex items-center gap-2">
                   <Save size={16} />
@@ -3155,7 +3157,7 @@ export default function App() {
                   onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && handleConfirmManualSave()}
                   placeholder="예: 마포 웰스트림 아파트 기계설비공사"
                   className={`w-full px-4 py-3 text-sm font-bold border focus:ring-0 outline-none transition-all text-slate-900 ${
-                    theme === 'high-density' ? 'border-[#141414] rounded-none focus:bg-yellow-50' : 'border-slate-200 rounded-xl focus:border-indigo-500'
+                    theme === 'high-density' ? 'border-[#0a1220] rounded-none focus:bg-yellow-50' : 'border-slate-200 rounded-xl focus:border-indigo-500'
                   }`}
                 />
                 <p className="mt-3 text-[10px] text-slate-500 leading-normal">
@@ -3166,7 +3168,7 @@ export default function App() {
                 <button
                   onClick={() => setIsManualSaveNamingOpen(false)}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-colors ${
-                    theme === 'high-density' ? 'border-[#141414] hover:bg-slate-100 text-black' : 'border-slate-200 text-slate-500 hover:bg-slate-50 bg-white'
+                    theme === 'high-density' ? 'border-[#0a1220] hover:bg-slate-100 text-black' : 'border-slate-200 text-slate-500 hover:bg-slate-50 bg-white'
                   }`}
                 >
                   취소
@@ -3174,7 +3176,7 @@ export default function App() {
                 <button
                   onClick={handleConfirmManualSave}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg text-white transition-opacity ${
-                    theme === 'high-density' ? 'bg-[#141414] hover:bg-black' : 'bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100'
+                    theme === 'high-density' ? 'bg-[#0a1220] hover:bg-black' : 'bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100'
                   }`}
                 >
                   저장 및 동기화
@@ -3502,7 +3504,7 @@ function NavItem({ icon, label, active = false, theme, subtitle, onClick }: { ic
     return (
       <button 
         onClick={onClick}
-        className={`w-full p-3 border-b border-[#141414] text-left transition-all ${
+        className={`w-full p-3 border-b border-[#0a1220] text-left transition-all ${
         active ? 'bg-white' : 'opacity-70 hover:bg-white/50'
       }`}>
         <div className="flex items-center justify-between mb-1">

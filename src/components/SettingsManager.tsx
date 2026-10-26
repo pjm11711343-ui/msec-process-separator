@@ -88,8 +88,7 @@ export default function SettingsManager({
             <div className="grid grid-cols-2 gap-3">
               {[
                 { id: 'modern', name: 'Standard Modern', desc: '표준 깔끔한 디자인' },
-                { id: 'high-density', name: 'High Density', desc: '산업용 고밀도 레이아웃' },
-                { id: 'industrial', name: 'Industrial Dark', desc: '눈이 편한 다크 모드' },
+                { id: 'high-density', name: '하이 덴시티 (추천)', desc: '고밀도 레이아웃 · 네이비/앰버' },
                 { id: 'minimal', name: 'Minimalist', desc: '최소한의 간결함' },
               ].map((t) => (
                 <button

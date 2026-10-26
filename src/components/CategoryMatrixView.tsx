@@ -536,7 +536,7 @@ export default function CategoryMatrixView({
       <div
         className={`p-4 rounded-2xl border transition-all ${
           isHighDensity
-            ? 'bg-[#E7E6E1] border-[#141414] text-black shadow-sm'
+            ? 'bg-[#E6EAF0] border-[#0a1220] text-black shadow-sm'
             : 'bg-white border-slate-200 text-slate-800 shadow-sm'
         } print:hidden`}
       >
@@ -546,7 +546,7 @@ export default function CategoryMatrixView({
             <div
               className={`p-2.5 rounded-xl ${
                 isHighDensity
-                  ? 'bg-[#141414] text-white'
+                  ? 'bg-[#0a1220] text-white'
                   : 'bg-amber-100 text-amber-800 border border-amber-200'
               }`}
             >
@@ -948,7 +948,7 @@ export default function CategoryMatrixView({
         data-pdf-container="true"
         className={`relative overflow-x-auto rounded-2xl border shadow-md ${
           isHighDensity
-            ? 'bg-white border-[#141414]'
+            ? 'bg-white border-[#0a1220]'
             : 'bg-white border-slate-300'
         } print:border-none print:shadow-none print:rounded-none`}
       >

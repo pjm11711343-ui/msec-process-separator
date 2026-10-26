@@ -78,7 +78,7 @@ export default function ProjectComparisonModal({ onClose, projects, theme }: Omi
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className={`w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl ${isHighDensity ? 'bg-[#141414] text-white border border-[#333]' : 'bg-white rounded-3xl'}`}
+        className={`w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl ${isHighDensity ? 'bg-[#0a1220] text-white border border-[#333]' : 'bg-white rounded-3xl'}`}
       >
         {/* Header */}
         <div className={`px-6 py-4 flex items-center justify-between border-b ${isHighDensity ? 'border-[#333]' : 'border-slate-100'}`}>
@@ -106,7 +106,7 @@ export default function ProjectComparisonModal({ onClose, projects, theme }: Omi
             <select 
               value={projectAId}
               onChange={(e) => setProjectAId(e.target.value)}
-              className={`w-full px-4 py-2.5 text-sm font-bold border outline-none transition-all ${isHighDensity ? 'bg-[#141414] border-[#333] rounded-none focus:border-indigo-500' : 'bg-white border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500'}`}
+              className={`w-full px-4 py-2.5 text-sm font-bold border outline-none transition-all ${isHighDensity ? 'bg-[#0a1220] border-[#333] rounded-none focus:border-indigo-500' : 'bg-white border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500'}`}
             >
               <option value="">현장 선택...</option>
               {projects.map(p => (
@@ -119,7 +119,7 @@ export default function ProjectComparisonModal({ onClose, projects, theme }: Omi
             <select 
               value={projectBId}
               onChange={(e) => setProjectBId(e.target.value)}
-              className={`w-full px-4 py-2.5 text-sm font-bold border outline-none transition-all ${isHighDensity ? 'bg-[#141414] border-[#333] rounded-none focus:border-indigo-500' : 'bg-white border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500'}`}
+              className={`w-full px-4 py-2.5 text-sm font-bold border outline-none transition-all ${isHighDensity ? 'bg-[#0a1220] border-[#333] rounded-none focus:border-indigo-500' : 'bg-white border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500'}`}
             >
               <option value="">현장 선택...</option>
               {projects.map(p => (

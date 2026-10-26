@@ -249,9 +249,9 @@ export default function CategorySummaryCards({
   // High-Density Theme Rendering
   if (theme === 'high-density') {
     return (
-      <div className="mb-6 bg-white border border-[#141414]">
+      <div className="mb-6 bg-white border border-[#0a1220]">
         {/* Prominent Site Name Banner */}
-        <div className="bg-[#141414] text-white px-4 py-2 flex flex-wrap items-center justify-between gap-2 border-b border-[#141414]">
+        <div className="bg-[#0a1220] text-white px-4 py-2 flex flex-wrap items-center justify-between gap-2 border-b border-[#0a1220]">
           <div className="flex items-center gap-3">
             <div className="p-1.5 bg-yellow-400 text-black font-black text-xs flex items-center justify-center">
               <Building2 size={16} />
@@ -275,7 +275,7 @@ export default function CategorySummaryCards({
                 e.stopPropagation();
                 onOpenStats?.();
               }}
-              className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#141414] hover:bg-yellow-400 hover:text-black text-[#141414] rounded text-[10px] font-black uppercase transition-all shadow-[2px_2px_0_0_#141414] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+              className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#0a1220] hover:bg-yellow-400 hover:text-black text-[#0a1220] rounded text-[10px] font-black uppercase transition-all shadow-[2px_2px_0_0_#0a1220] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
             >
               <BarChart3 size={11} />
               상세 통계 리포트
@@ -300,7 +300,7 @@ export default function CategorySummaryCards({
         </div>
 
         {/* Section Header */}
-        <div className="bg-[#F2F2F2] border-b border-[#141414] px-4 py-1.5 flex flex-wrap items-center justify-between gap-2 text-black">
+        <div className="bg-[#F2F2F2] border-b border-[#0a1220] px-4 py-1.5 flex flex-wrap items-center justify-between gap-2 text-black">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Tags size={13} />
@@ -311,7 +311,7 @@ export default function CategorySummaryCards({
             {onRenameCategory && (
               <button
                 onClick={(e) => openRenameModal(undefined, e)}
-                className="flex items-center gap-1 px-2 py-0.5 bg-white border border-[#141414] hover:bg-yellow-400 text-slate-900 rounded text-[10px] font-black uppercase transition-all shadow-[1px_1px_0_0_#141414] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                className="flex items-center gap-1 px-2 py-0.5 bg-white border border-[#0a1220] hover:bg-yellow-400 text-slate-900 rounded text-[10px] font-black uppercase transition-all shadow-[1px_1px_0_0_#0a1220] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
                 title="카테고리 명칭 수동 수정"
               >
                 <Edit2 size={10} />
@@ -323,7 +323,7 @@ export default function CategorySummaryCards({
               className={`flex items-center gap-1.5 px-2 py-0.5 border text-[10px] font-black uppercase transition-all ${
                 showComparison 
                 ? 'bg-indigo-600 text-white border-indigo-700 shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)]' 
-                : 'bg-white text-slate-700 border-[#141414] hover:bg-[#EBEAE8]'
+                : 'bg-white text-slate-700 border-[#0a1220] hover:bg-[#ECEFF3]'
               }`}
             >
               <Calculator size={10} />
@@ -336,8 +336,8 @@ export default function CategorySummaryCards({
               }}
               className={`flex items-center gap-1.5 px-2 py-0.5 border text-[10px] font-black uppercase transition-all ${
                 separationMethod === 'method2' 
-                ? 'bg-yellow-400 text-black border-[#141414] shadow-[1px_1px_0_0_#141414]' 
-                : 'bg-white text-slate-500 border-[#141414] hover:bg-[#EBEAE8]'
+                ? 'bg-yellow-400 text-black border-[#0a1220] shadow-[1px_1px_0_0_#0a1220]' 
+                : 'bg-white text-slate-500 border-[#0a1220] hover:bg-[#ECEFF3]'
               }`}
               title="분리 방식 전환: 방식1(표준) vs 방식2(공정분리/외주턴키)"
             >
@@ -357,11 +357,11 @@ export default function CategorySummaryCards({
         </div>
 
         {/* Grid Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-0 divide-x divide-y divide-[#141414]">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-0 divide-x divide-y divide-[#0a1220]">
           {/* Total Summary Card */}
           <div 
             onClick={() => onCategoryClick?.('all')}
-            className="p-3 flex flex-col justify-between bg-indigo-50 hover:bg-indigo-100 transition-colors border-[#141414] cursor-pointer"
+            className="p-3 flex flex-col justify-between bg-indigo-50 hover:bg-indigo-100 transition-colors border-[#0a1220] cursor-pointer"
           >
             <div className="flex justify-between items-start mb-1">
               <span className="text-[11px] font-black text-indigo-700 uppercase">총계약 합계 (TOTAL)</span>
@@ -389,7 +389,7 @@ export default function CategorySummaryCards({
           {unclassifiedCount > 0 && (
             <div 
               onClick={() => onCategoryClick?.('미분류')}
-              className="p-3 flex flex-col justify-between bg-[#FFF2CC] hover:bg-[#FCE4D6] transition-colors border-l-4 border-l-amber-600 border-y border-r border-[#141414] cursor-pointer"
+              className="p-3 flex flex-col justify-between bg-[#FFF2CC] hover:bg-[#FCE4D6] transition-colors border-l-4 border-l-amber-600 border-y border-r border-[#0a1220] cursor-pointer"
             >
               <div className="flex justify-between items-start mb-1">
                 <span className="text-[11px] font-black text-amber-800 uppercase">⚠️ 미분류 합계</span>
@@ -419,7 +419,7 @@ export default function CategorySummaryCards({
                 <div 
                   key={cat.name} 
                   onClick={() => onCategoryClick?.(cat.name)}
-                  className={`p-3 flex flex-col justify-between bg-indigo-50/30 hover:bg-indigo-50/50 transition-colors border-[#141414] cursor-pointer border-l-4 ${showComparison ? 'ring-1 ring-inset ring-indigo-200' : ''}`}
+                  className={`p-3 flex flex-col justify-between bg-indigo-50/30 hover:bg-indigo-50/50 transition-colors border-[#0a1220] cursor-pointer border-l-4 ${showComparison ? 'ring-1 ring-inset ring-indigo-200' : ''}`}
                   style={{ borderLeftColor: categoryColors[cat.name] || '#4f46e5' }}
                 >
                   <div className="flex justify-between items-start mb-1">
@@ -595,7 +595,7 @@ export default function CategorySummaryCards({
                 <div 
                   key={cat.name} 
                   onClick={() => onCategoryClick?.(cat.name)}
-                  className={`p-3 flex flex-col justify-between bg-amber-50/50 hover:bg-amber-100/60 transition-colors border-[#141414] cursor-pointer border-l-4 ${showComparison ? 'ring-1 ring-inset ring-amber-200' : ''}`}
+                  className={`p-3 flex flex-col justify-between bg-amber-50/50 hover:bg-amber-100/60 transition-colors border-[#0a1220] cursor-pointer border-l-4 ${showComparison ? 'ring-1 ring-inset ring-amber-200' : ''}`}
                   style={{ borderLeftColor: categoryColors[cat.name] || '#f59e0b' }}
                 >
                   <div className="flex justify-between items-start mb-1">
@@ -730,7 +730,7 @@ export default function CategorySummaryCards({
               <div 
                 key={cat.name} 
                 onClick={() => onCategoryClick?.(cat.name)}
-                className={`p-3 flex flex-col justify-between hover:bg-[#F9F9F9] transition-colors border-[#141414] cursor-pointer border-t-2 ${showComparison ? 'ring-1 ring-inset ring-indigo-200' : ''}`}
+                className={`p-3 flex flex-col justify-between hover:bg-[#F9F9F9] transition-colors border-[#0a1220] cursor-pointer border-t-2 ${showComparison ? 'ring-1 ring-inset ring-indigo-200' : ''}`}
                 style={{ borderTopColor: categoryColors[cat.name] || '#cbd5e1' }}
               >
                 <div className="flex justify-between items-start mb-1">

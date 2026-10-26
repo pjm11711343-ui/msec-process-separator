@@ -72,9 +72,9 @@ export default function PriceAnalysis({ items, theme }: Props) {
       highlight: 'bg-zinc-50 border-zinc-200'
     },
     'high-density': {
-      card: 'bg-white border-[#141414] text-[#141414]',
-      header: 'text-[#141414] font-black uppercase tracking-tighter',
-      highlight: 'bg-[#FF0000]/10 border-[#141414]'
+      card: 'bg-white border-[#0a1220] text-[#0a1220]',
+      header: 'text-[#0a1220] font-black uppercase tracking-tighter',
+      highlight: 'bg-[#FF0000]/10 border-[#0a1220]'
     }
   }[theme];
 

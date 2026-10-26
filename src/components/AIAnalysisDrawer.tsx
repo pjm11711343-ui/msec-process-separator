@@ -46,7 +46,7 @@ export default function AIAnalysisDrawer({ isOpen, onClose, items, theme, onExpo
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className={`fixed bottom-0 left-0 right-0 z-[201] flex flex-col max-h-[92vh] ${
               isHighDensity 
-                ? 'bg-[#E7E6E1] border-t-4 border-[#141414]' 
+                ? 'bg-[#E6EAF0] border-t-4 border-[#0a1220]' 
                 : 'bg-white rounded-t-[32px] shadow-[0_-20px_50px_rgba(0,0,0,0.15)] border-t border-slate-200'
             }`}
           >
@@ -56,7 +56,7 @@ export default function AIAnalysisDrawer({ isOpen, onClose, items, theme, onExpo
             )}
 
             {/* Header */}
-            <div className={`px-8 py-6 flex items-center justify-between ${isHighDensity ? 'bg-[#141414] text-white' : ''}`}>
+            <div className={`px-8 py-6 flex items-center justify-between ${isHighDensity ? 'bg-[#0a1220] text-white' : ''}`}>
               <div className="flex items-center gap-4">
                 <div className={`p-2.5 rounded-2xl ${isHighDensity ? 'bg-blue-500' : 'bg-indigo-600 text-white'}`}>
                   <Brain size={24} className={isHighDensity ? 'text-white' : ''} />
@@ -97,12 +97,12 @@ export default function AIAnalysisDrawer({ isOpen, onClose, items, theme, onExpo
                       onClick={() => setView('report')}
                       className={`group p-6 text-left border-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
                         isHighDensity 
-                          ? 'border-[#141414] bg-white hover:bg-zinc-50' 
+                          ? 'border-[#0a1220] bg-white hover:bg-zinc-50' 
                           : 'border-slate-100 bg-white rounded-3xl hover:border-indigo-200 hover:shadow-xl shadow-sm'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-4">
-                        <div className={`p-3 rounded-2xl ${isHighDensity ? 'bg-[#141414] text-white' : 'bg-indigo-50 text-indigo-600'}`}>
+                        <div className={`p-3 rounded-2xl ${isHighDensity ? 'bg-[#0a1220] text-white' : 'bg-indigo-50 text-indigo-600'}`}>
                           <Sparkles size={24} />
                         </div>
                         <div className="flex items-center gap-1 text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-full">
@@ -123,12 +123,12 @@ export default function AIAnalysisDrawer({ isOpen, onClose, items, theme, onExpo
                       onClick={() => setView('report')}
                       className={`group p-6 text-left border-2 transition-all hover:scale-[1.02] active:scale-[0.98] ${
                         isHighDensity 
-                          ? 'border-[#141414] bg-white hover:bg-zinc-50' 
+                          ? 'border-[#0a1220] bg-white hover:bg-zinc-50' 
                           : 'border-slate-100 bg-white rounded-3xl hover:border-indigo-200 hover:shadow-xl shadow-sm'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-4">
-                        <div className={`p-3 rounded-2xl ${isHighDensity ? 'bg-[#141414] text-white' : 'bg-amber-50 text-amber-600'}`}>
+                        <div className={`p-3 rounded-2xl ${isHighDensity ? 'bg-[#0a1220] text-white' : 'bg-amber-50 text-amber-600'}`}>
                           <BarChart3 size={24} />
                         </div>
                       </div>
@@ -146,7 +146,7 @@ export default function AIAnalysisDrawer({ isOpen, onClose, items, theme, onExpo
                       onClick={onExportXlsx}
                       className={`group p-6 text-left border-2 transition-all hover:scale-[1.02] active:scale-[0.98] md:col-span-2 ${
                         isHighDensity 
-                          ? 'border-[#141414] bg-[#141414] text-white hover:bg-black' 
+                          ? 'border-[#0a1220] bg-[#0a1220] text-white hover:bg-black' 
                           : 'border-slate-100 bg-slate-900 text-white rounded-3xl hover:shadow-xl'
                       }`}
                     >
@@ -192,7 +192,7 @@ export default function AIAnalysisDrawer({ isOpen, onClose, items, theme, onExpo
             </div>
 
             {/* Footer / Drag Area */}
-            <div className={`px-8 py-4 border-t flex justify-center ${isHighDensity ? 'bg-[#F2F2F2] border-[#141414]' : 'bg-slate-50'}`}>
+            <div className={`px-8 py-4 border-t flex justify-center ${isHighDensity ? 'bg-[#F2F2F2] border-[#0a1220]' : 'bg-slate-50'}`}>
               <div className="w-16 h-1 bg-slate-300 rounded-full opacity-50" />
             </div>
           </motion.div>

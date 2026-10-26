@@ -10,15 +10,6 @@ interface Props {
 export default function TemplateSelector({ onSelect }: Props) {
   const templates = [
     {
-      id: 'industrial' as ThemeType,
-      name: '인더스트리얼 스틸',
-      description: '강력한 대비와 고밀도 데이터 표현에 최적화된 기계설비 전문 스타일',
-      icon: <Briefcase className="w-8 h-8 text-slate-400" />,
-      color: 'bg-slate-900',
-      textColor: 'text-slate-100',
-      accent: 'border-blue-500'
-    },
-    {
       id: 'modern' as ThemeType,
       name: '소프트 모던',
       description: '여유로운 공백과 부드러운 컬러를 사용한 세련된 비즈니스 스타일',
@@ -38,12 +29,12 @@ export default function TemplateSelector({ onSelect }: Props) {
     },
     {
       id: 'high-density' as ThemeType,
-      name: '하이 덴시티 v4.0',
-      description: '고밀도 데이터 그리드와 엔지니어링 미학을 결합한 전문가용 인터페이스',
+      name: '하이 덴시티 v4.0 (추천)',
+      description: '한 화면에 가장 많은 내역을 보여주는 고밀도 레이아웃 · 네이비/앰버 색상',
       icon: <Layout className="w-8 h-8 text-blue-600" />,
-      color: 'bg-[#F4F4F2]',
-      textColor: 'text-[#141414]',
-      accent: 'border-[#141414]'
+      color: 'bg-[#F3F5F8]',
+      textColor: 'text-[#0a1220]',
+      accent: 'border-[#0a1220]'
     }
   ];
 
@@ -58,7 +49,7 @@ export default function TemplateSelector({ onSelect }: Props) {
         <p className="text-slate-600 text-lg">사용자의 업무 스타일에 가장 잘 맞는 인터페이스 디자인을 선택해주세요.</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl w-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl w-full">
         {templates.map((template, idx) => (
           <motion.button
             key={template.id}
