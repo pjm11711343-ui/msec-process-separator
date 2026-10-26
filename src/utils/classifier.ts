@@ -163,8 +163,10 @@ export function isDesignChangeItem(item: Pick<SpecItem, 'name' | 'specification'
  *    (공정 안의 공구손료·잡재료비·페인트칠 등 모든 품목 포함)
  * 3. 지급자재: 수량은 있는데 재료비·노무비 단가 0원
  * 4. 간접비: 수량은 있는데 재료비 단가 0원, 노무비만 있음
+ * 5. 스리브+고정틀+내화채움재: 품명에 '스리브'가 들어간 품목 (세면기스리브·양변기스리브 내화채움구조 등)
  */
-export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-덕트공사', '외주-전열교환기', '지급자재', '간접비'];
+export const SLEEVE_CATEGORY = '스리브+고정틀+내화채움재';
+export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-덕트공사', '외주-전열교환기', '지급자재', '간접비', SLEEVE_CATEGORY];
 
 export function builtInClassify(item: SpecItem): { category: string; remark: string } | null {
   if (!item) return null;
@@ -186,6 +188,9 @@ export function builtInClassify(item: SpecItem): { category: string; remark: str
   }
   if (qty > 0 && mPrice === 0 && (lPrice > 0 || (Number(item.laborAmount) || 0) > 0)) {
     return { category: '간접비', remark: '간접비 (노무비만 있음)' };
+  }
+  if ((item.name || '').replace(/\s+/g, '').includes('스리브')) {
+    return { category: SLEEVE_CATEGORY, remark: '스리브+고정틀+내화채움재 (품명에 스리브)' };
   }
   return null;
 }

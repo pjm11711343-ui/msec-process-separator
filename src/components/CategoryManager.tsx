@@ -711,6 +711,10 @@ export default function CategoryManager({
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 font-bold">간접비</span>
                     <span><b>수량은 있는데</b> 재료비 단가 0원, 노무비만 있는 품목</span>
                   </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold">스리브+고정틀+내화채움재</span>
+                    <span>품명에 <b>스리브</b>가 들어간 품목 (세면기스리브·양변기스리브 내화채움구조 포함)</span>
+                  </li>
                 </ul>
                 <p className="mt-2 text-[10px] text-slate-400">이미 올린 내역에는 아래 [현재 시트 데이터에 분류 규칙 즉시 적용]을 누르면 반영됩니다.</p>
               </div>

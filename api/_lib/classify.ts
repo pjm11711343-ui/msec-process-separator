@@ -78,6 +78,8 @@ export async function classifyItems(items: any[], categories: string[], customRu
       const lPrice = Number(item.laborUnitPrice) || 0;
       if (qty > 0 && mPrice === 0 && lPrice === 0) { results.push({ id: item.id, category: '지급자재' }); return; }
       if (qty > 0 && mPrice === 0 && lPrice > 0) { results.push({ id: item.id, category: '간접비' }); return; }
+      // 품명에 '스리브' → 스리브+고정틀+내화채움재
+      if (name.includes('스리브')) { results.push({ id: item.id, category: '스리브+고정틀+내화채움재' }); return; }
 
       // 0. Price Rule (Sync with utils/classifier.ts)
       // If both material and labor unit prices are 0, classify as "지급자재"
