@@ -164,9 +164,24 @@ export function isDesignChangeItem(item: Pick<SpecItem, 'name' | 'specification'
  * 3. 지급자재: 수량은 있는데 재료비·노무비 단가 0원
  * 4. 간접비: 수량은 있는데 재료비 단가 0원, 노무비만 있음
  * 5. 스리브+고정틀+내화채움재: 품명에 '스리브'가 들어간 품목 (세면기스리브·양변기스리브 내화채움구조 등)
+ * 6. STS 부속(일반배관용STS강관이음쇠·스텐관용접·스텐용접후렌지·무용접스텐) / STS 관(배관용·일반배관용스테인리스강관):
+ *    위생공종 → STS위생부속·STS위생관, 난방공종 → STS난방부속·STS난방관
+ * 7. 밸브류: 게이트·버터플라이·체크밸브, 스트레이너, 플랙시블조인트, 수격방지기, 압력계, 목긴볼밸브, 볼밸브
  */
 export const SLEEVE_CATEGORY = '스리브+고정틀+내화채움재';
-export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-세대환기', '외주-덕트공사', '외주-전열교환기', '지급자재', '간접비', SLEEVE_CATEGORY];
+export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-세대환기', '외주-덕트공사', '외주-전열교환기', '지급자재', '간접비', SLEEVE_CATEGORY,
+  'STS위생부속', 'STS난방부속', 'STS위생관', 'STS난방관', '밸브류'];
+
+// 공정 구분: 난방 / 위생(위생·급수·급탕·배수)
+export function sanitaryOrHeating(path: string): '난방' | '위생' | '' {
+  const p = (path || '').replace(/\s+/g, '');
+  if (p.includes('난방')) return '난방';
+  if (/위생|급수|급탕|배수|오수/.test(p)) return '위생';
+  return '';
+}
+export const STS_FITTING_KEYWORDS = ['일반배관용sts강관이음쇠', '스텐관용접', '스텐용접후렌지', '스텐용접합후렌지', '무용접스텐'];
+export const STS_PIPE_KEYWORDS = ['일반배관용스테인리스강관', '배관용스테인리스강관'];
+export const VALVE_KEYWORDS = ['게이트밸브', '버터플라이밸브', '체크밸브', '스트레이너', '플랙시블조인트', '플렉시블조인트', '수격방지기', '압력계', '목긴볼밸브', '목긴용볼밸브', '볼밸브'];
 
 /** 세대내(단위세대) 환기덕트 공정인지 — 공정 경로(상위 공정 포함) 기준 */
 export function isUnitVentDuctPath(path: string): boolean {
@@ -200,6 +215,19 @@ export function builtInClassify(item: SpecItem): { category: string; remark: str
   }
   if ((item.name || '').replace(/\s+/g, '').includes('스리브')) {
     return { category: SLEEVE_CATEGORY, remark: '스리브+고정틀+내화채움재 (품명에 스리브)' };
+  }
+  // STS 부속/관: 위생공종 → STS위생*, 난방공종 → STS난방*
+  const nm = (item.name || '').replace(/\s+/g, '').toLowerCase();
+  const kind = sanitaryOrHeating(path);
+  if (kind && STS_FITTING_KEYWORDS.some(k => nm.includes(k))) {
+    return { category: `STS${kind}부속`, remark: `STS${kind}부속 (${kind}공종 STS 부속)` };
+  }
+  if (kind && STS_PIPE_KEYWORDS.some(k => nm.includes(k))) {
+    return { category: `STS${kind}관`, remark: `STS${kind}관 (${kind}공종 STS 관)` };
+  }
+  // 밸브류
+  if (VALVE_KEYWORDS.some(k => nm.includes(k))) {
+    return { category: '밸브류', remark: '밸브류 (밸브·스트레이너·플랙시블·수격방지기·압력계)' };
   }
   return null;
 }

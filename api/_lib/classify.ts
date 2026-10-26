@@ -83,6 +83,18 @@ export async function classifyItems(items: any[], categories: string[], customRu
       if (qty > 0 && mPrice === 0 && lPrice > 0) { results.push({ id: item.id, category: '간접비' }); return; }
       // 품명에 '스리브' → 스리브+고정틀+내화채움재
       if (name.includes('스리브')) { results.push({ id: item.id, category: '스리브+고정틀+내화채움재' }); return; }
+      // STS 부속/관 (위생/난방 공종) · 밸브류 (Sync with utils/classifier.ts builtInClassify)
+      const nm = name.toLowerCase();
+      const kind = path.includes('난방') ? '난방' : (/위생|급수|급탕|배수|오수/.test(path) ? '위생' : '');
+      if (kind && ['일반배관용sts강관이음쇠', '스텐관용접', '스텐용접후렌지', '스텐용접합후렌지', '무용접스텐'].some(k => nm.includes(k))) {
+        results.push({ id: item.id, category: `STS${kind}부속` }); return;
+      }
+      if (kind && ['일반배관용스테인리스강관', '배관용스테인리스강관'].some(k => nm.includes(k))) {
+        results.push({ id: item.id, category: `STS${kind}관` }); return;
+      }
+      if (['게이트밸브', '버터플라이밸브', '체크밸브', '스트레이너', '플랙시블조인트', '플렉시블조인트', '수격방지기', '압력계', '목긴볼밸브', '목긴용볼밸브', '볼밸브'].some(k => nm.includes(k))) {
+        results.push({ id: item.id, category: '밸브류' }); return;
+      }
 
       // 0. Price Rule (Sync with utils/classifier.ts)
       // If both material and labor unit prices are 0, classify as "지급자재"

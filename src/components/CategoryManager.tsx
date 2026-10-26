@@ -799,6 +799,18 @@ export default function CategoryManager({
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold">스리브+고정틀+내화채움재</span>
                     <span>품명에 <b>스리브</b>가 들어간 품목 (세면기스리브·양변기스리브 내화채움구조 포함)</span>
                   </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-bold">STS위생/난방부속</span>
+                    <span>일반배관용STS강관이음쇠·스텐관용접·스텐용접후렌지·무용접스텐 — <b>위생공종</b>(위생·급수·급탕·배수)이면 STS위생부속, <b>난방공종</b>이면 STS난방부속</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 font-bold">STS위생/난방관</span>
+                    <span>배관용·일반배관용스테인리스강관 — 위생공종이면 STS위생관, 난방공종이면 STS난방관</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold">밸브류</span>
+                    <span>게이트·버터플라이·체크밸브, 스트레이너, 플랙시블조인트, 수격방지기, 압력계, 목긴볼밸브, 볼밸브</span>
+                  </li>
                 </ul>
                 <p className="mt-2 text-[10px] text-slate-400">이미 올린 내역에는 아래 [현재 시트 데이터에 분류 규칙 즉시 적용]을 누르면 반영됩니다.</p>
               </div>
