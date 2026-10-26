@@ -50,9 +50,9 @@ export default function SettingsManager({
   };
 
   const fontOptions = [
-    { name: '굴림 (Default)', value: '"Gulim", "굴림", Dotum, "돋움", sans-serif' },
+    { name: '굴림', value: '"Gulim", "굴림", Dotum, "돋움", sans-serif' },
     { name: '돋움', value: 'Dotum, "돋움", sans-serif' },
-    { name: '맑은 고딕', value: '"Malgun Gothic", "맑은 고딕", sans-serif' },
+    { name: '맑은 고딕 (기본)', value: '"Malgun Gothic", "맑은 고딕", sans-serif' },
     { name: '바탕', value: 'Batang, "바탕", serif' },
     { name: 'Inter (System)', value: '"Inter", sans-serif' },
     { name: 'Mono (Standard)', value: '"JetBrains Mono", monospace' }

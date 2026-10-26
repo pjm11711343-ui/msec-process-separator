@@ -8,8 +8,8 @@
 
 @layer base {
   :root {
-    --app-font-family: "Gulim", "굴림", Dotum, "돋움", sans-serif;
-    --app-font-size: 11px;
+    --app-font-family: "Malgun Gothic", "맑은 고딕", sans-serif;
+    --app-font-size: 15px;
   }
   html {
     font-size: var(--app-font-size);

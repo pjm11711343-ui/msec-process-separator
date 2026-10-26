@@ -257,8 +257,8 @@ export async function saveProjectToFirestore(project: Project): Promise<void> {
       theme: project.theme || 'high-density',
       config: project.config || {
         theme: project.theme || 'high-density',
-        fontFamily: '"Gulim", "굴림", Dotum, "돋움", sans-serif',
-        fontSize: 11
+        fontFamily: '"Malgun Gothic", "맑은 고딕", sans-serif',
+        fontSize: 15
       },
       categories: project.categories || [],
       updatedAt: project.updatedAt || Date.now(),
@@ -387,8 +387,8 @@ export async function saveActiveSessionToFirestore(session: {
     const dataToSave: any = {
       projectName: session.projectName || '',
       theme: session.theme || null,
-      fontFamily: session.fontFamily || '"Gulim", "굴림", Dotum, "돋움", sans-serif',
-      fontSize: session.fontSize || 11,
+      fontFamily: session.fontFamily || '"Malgun Gothic", "맑은 고딕", sans-serif',
+      fontSize: session.fontSize || 15,
       categories: session.categories || [],
       categoryEstimates: session.categoryEstimates || {},
       commencementDate: session.commencementDate || '',
@@ -456,8 +456,8 @@ export function subscribeActiveSessionFromFirestore(
             projectName: data.projectName || '',
             items,
             theme: data.theme || null,
-            fontFamily: data.fontFamily || '"Gulim", "굴림", Dotum, "돋움", sans-serif',
-            fontSize: data.fontSize || 11,
+            fontFamily: data.fontFamily || '"Malgun Gothic", "맑은 고딕", sans-serif',
+            fontSize: data.fontSize || 15,
             categories: data.categories || [],
             categoryEstimates: data.categoryEstimates || {},
             isLocked: !!data.isLocked,
@@ -601,6 +601,7 @@ export async function saveGlobalUIConfigToFirestore(config: {
     const uiRef = doc(db, 'app_settings', 'ui_config');
     await setDoc(uiRef, {
       ...config,
+      version: 2,
       updatedAt: Date.now()
     });
   } catch (err) {
@@ -609,7 +610,7 @@ export async function saveGlobalUIConfigToFirestore(config: {
 }
 
 export function subscribeGlobalUIConfigFromFirestore(
-  callback: (config: { fontFamily: string; fontSize: number }) => void
+  callback: (config: { fontFamily: string; fontSize: number; version?: number }) => void
 ): () => void {
   if (!checkQuotaState()) {
     return () => {};
@@ -624,7 +625,8 @@ export function subscribeGlobalUIConfigFromFirestore(
           if (data.fontFamily && data.fontSize) {
             callback({
               fontFamily: data.fontFamily,
-              fontSize: data.fontSize
+              fontSize: data.fontSize,
+              version: data.version || 0
             });
           }
         }

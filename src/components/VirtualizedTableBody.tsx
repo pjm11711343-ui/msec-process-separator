@@ -118,7 +118,7 @@ const TableRowInner = (props: {
             className="accent-white cursor-pointer"
           />
         </div>
-        <div className="w-[50px] shrink-0 font-mono font-black text-center text-[11px] text-indigo-200">
+        <div className="w-[50px] shrink-0 font-mono font-black text-center text-[length:var(--app-font-size)] text-indigo-200">
           C{row.catIdx + 1}
         </div>
         <div className="w-[556px] shrink-0 font-black uppercase tracking-wider px-3 truncate text-xs text-white">
@@ -145,7 +145,7 @@ const TableRowInner = (props: {
       <div 
         style={style} 
         {...ariaAttributes}
-        className={`flex items-center min-w-[1816px] w-full text-[11px] font-bold ${
+        className={`flex items-center min-w-[1816px] w-full text-[length:var(--app-font-size)] font-bold ${
           isHighDensity ? 'bg-slate-100 text-slate-800' : 'bg-slate-100/90 text-slate-700'
         } border-b border-slate-200 px-2 select-none`}
       >
@@ -248,43 +248,43 @@ const TableRowInner = (props: {
         {isAggregated ? `Σ${itemIdx + 1}` : (itemIdx + 1).toString().padStart(3, '0')}
       </div>
 
-      <div className={`w-[230px] h-full shrink-0 flex items-center px-2.5 font-bold text-slate-900 truncate text-[11px] ${borderCellClass}`} title={item.name}>
+      <div className={`w-[230px] h-full shrink-0 flex items-center px-2.5 font-bold text-slate-900 truncate text-[length:var(--app-font-size)] ${borderCellClass}`} title={item.name}>
         <span className="truncate">{item.name}</span>
       </div>
 
-      <div className={`w-[210px] h-full shrink-0 flex items-center px-2 text-slate-600 truncate text-[11px] ${borderCellClass}`} title={item.specification}>
+      <div className={`w-[210px] h-full shrink-0 flex items-center px-2 text-slate-600 truncate text-[length:var(--app-font-size)] ${borderCellClass}`} title={item.specification}>
         <span className="truncate">{item.specification || '-'}</span>
       </div>
 
-      <div className={`w-[48px] h-full shrink-0 flex items-center justify-center text-slate-600 text-[11px] font-medium ${borderCellClass}`}>
+      <div className={`w-[48px] h-full shrink-0 flex items-center justify-center text-slate-600 text-[length:var(--app-font-size)] font-medium ${borderCellClass}`}>
         {item.unit || '-'}
       </div>
 
-      <div className={`w-[68px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-800 text-[11px] font-medium ${borderCellClass}`}>
+      <div className={`w-[68px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-800 text-[length:var(--app-font-size)] font-medium ${borderCellClass}`}>
         {getItemQuantity(item).toLocaleString()}
       </div>
 
-      <div className={`w-[84px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-600 text-[11px] ${borderCellClass} ${costViewType === 'material' ? 'bg-blue-50/50' : ''}`}>
+      <div className={`w-[84px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-600 text-[length:var(--app-font-size)] ${borderCellClass} ${costViewType === 'material' ? 'bg-blue-50/50' : ''}`}>
         ₩{(item.materialUnitPrice || 0).toLocaleString()}
       </div>
 
-      <div className={`w-[98px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-700 text-[11px] font-medium ${borderCellClass} ${costViewType === 'material' ? 'bg-blue-50' : ''}`}>
+      <div className={`w-[98px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-700 text-[length:var(--app-font-size)] font-medium ${borderCellClass} ${costViewType === 'material' ? 'bg-blue-50' : ''}`}>
         ₩{(item.materialAmount || 0).toLocaleString()}
       </div>
 
-      <div className={`w-[84px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-600 text-[11px] ${borderCellClass} ${costViewType === 'labor' ? 'bg-amber-50/50' : ''}`}>
+      <div className={`w-[84px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-600 text-[length:var(--app-font-size)] ${borderCellClass} ${costViewType === 'labor' ? 'bg-amber-50/50' : ''}`}>
         ₩{(item.laborUnitPrice || 0).toLocaleString()}
       </div>
 
-      <div className={`w-[98px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-700 text-[11px] font-medium ${borderCellClass} ${costViewType === 'labor' ? 'bg-amber-50' : ''}`}>
+      <div className={`w-[98px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-700 text-[length:var(--app-font-size)] font-medium ${borderCellClass} ${costViewType === 'labor' ? 'bg-amber-50' : ''}`}>
         ₩{(item.laborAmount || 0).toLocaleString()}
       </div>
 
-      <div className={`w-[88px] h-full shrink-0 flex items-center justify-end px-2 font-mono font-semibold text-slate-900 bg-indigo-50/30 text-[11px] ${borderCellClass} ${costViewType === 'total' ? 'bg-indigo-100/50' : ''}`}>
+      <div className={`w-[88px] h-full shrink-0 flex items-center justify-end px-2 font-mono font-semibold text-slate-900 bg-indigo-50/30 text-[length:var(--app-font-size)] ${borderCellClass} ${costViewType === 'total' ? 'bg-indigo-100/50' : ''}`}>
         ₩{item.unitPrice.toLocaleString()}
       </div>
 
-      <div className={`w-[110px] h-full shrink-0 flex items-center justify-end px-2 font-mono font-bold text-indigo-600 bg-amber-50/40 text-[11px] ${borderCellClass} ${costViewType === 'total' ? 'bg-amber-100/50' : ''}`}>
+      <div className={`w-[110px] h-full shrink-0 flex items-center justify-end px-2 font-mono font-bold text-indigo-600 bg-amber-50/40 text-[length:var(--app-font-size)] ${borderCellClass} ${costViewType === 'total' ? 'bg-amber-100/50' : ''}`}>
         ₩{item.amount.toLocaleString()}
       </div>
 
@@ -329,14 +329,14 @@ const TableRowInner = (props: {
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={saveEdit}
               onKeyDown={handleKeyDown}
-              className="w-full h-full bg-amber-50 border-none outline-none text-[11px] font-black font-mono text-right"
+              className="w-full h-full bg-amber-50 border-none outline-none text-[length:var(--app-font-size)] font-black font-mono text-right"
             />
           ) : (
             <div 
               className="w-full flex items-center justify-end gap-2 cursor-text h-full"
               onClick={() => startEditing(item.id, 'executionAmount', item.executionAmount || 0)}
             >
-              <span className={`text-[11px] font-black font-mono ${item.executionAmount ? 'text-amber-600' : 'text-slate-300'}`}>
+              <span className={`text-[length:var(--app-font-size)] font-black font-mono ${item.executionAmount ? 'text-amber-600' : 'text-slate-300'}`}>
                 {item.executionAmount ? `₩${item.executionAmount.toLocaleString()}` : '₩0'}
               </span>
             </div>
@@ -422,10 +422,14 @@ export const VirtualizedTableBody: React.FC<VirtualizedTableBodyProps> = ({
   handleKeyDown,
   setEditValue
 }) => {
-  const itemHeight = React.useMemo(() => 
-    theme === 'high-density' ? 28 + (density - 2) * 4 : 36 + (density - 2) * 5,
-    [theme, density]
-  );
+  // 내역 글자 크기는 설정의 기본 글자크기를 따름 → 글자가 커지면 행 높이도 함께 늘림
+  const appFontSize = typeof document !== 'undefined'
+    ? (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--app-font-size')) || 11)
+    : 11;
+  const itemHeight = React.useMemo(() => {
+    const base = theme === 'high-density' ? 28 + (density - 2) * 4 : 36 + (density - 2) * 5;
+    return Math.round(base + Math.max(0, appFontSize - 11) * 1.25);
+  }, [theme, density, appFontSize]);
   
   const isHighDensity = theme === 'high-density';
   

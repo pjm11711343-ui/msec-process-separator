@@ -195,8 +195,8 @@ function unminifyState(minState: any) {
   return {
     items,
     theme: minState.th,
-    fontFamily: minState.ff || '"Gulim", "굴림", Dotum, "돋움", sans-serif',
-    fontSize: minState.fs || 11,
+    fontFamily: minState.ff || '"Malgun Gothic", "맑은 고딕", sans-serif',
+    fontSize: minState.fs || 15,
     categories: minState.cats,
     projectName: minState.pName
   };
@@ -315,8 +315,8 @@ export default function App() {
   const [themeRaw, setThemeRaw] = useState<ThemeType | null>('high-density');
   const theme = (themeRaw === 'industrial' ? 'high-density' : themeRaw) as ThemeType | null;
   const setTheme = (t: ThemeType | null) => setThemeRaw(t === 'industrial' ? 'high-density' : t);
-  const [fontFamily, setFontFamily] = useState<string>('"Gulim", "굴림", Dotum, "돋움", sans-serif');
-  const [fontSize, setFontSize] = useState<number>(11);
+  const [fontFamily, setFontFamily] = useState<string>('"Malgun Gothic", "맑은 고딕", sans-serif');
+  const [fontSize, setFontSize] = useState<number>(15);
   const [items, setItems] = useState<SpecItem[]>([]);
   const [activeTab, setActiveTab] = useState<'list' | 'matrix' | 'analysis'>('list');
   const [separationMethod, setSeparationMethod] = useState<SeparationMethod>('method2');
@@ -817,6 +817,10 @@ export default function App() {
 
     // Subscribe to Global UI Config (Font settings)
     const unsubscribeUIConfig = subscribeGlobalUIConfigFromFirestore(config => {
+      if ((config.version || 0) < 2) {
+        saveGlobalUIConfigToFirestore({ fontFamily: '"Malgun Gothic", "맑은 고딕", sans-serif', fontSize: 15 }).catch(console.warn);
+        return;
+      }
       if (config.fontFamily) {
         setFontFamily(prev => prev === config.fontFamily ? prev : config.fontFamily);
       }
@@ -1246,8 +1250,8 @@ export default function App() {
       // We no longer override global font settings from per-project config to ensure "unified" experience
       /* 
       if (project.config) {
-        setFontFamily(project.config.fontFamily || '"Gulim", "굴림", Dotum, "돋움", sans-serif');
-        setFontSize(project.config.fontSize || 11);
+        setFontFamily(project.config.fontFamily || '"Malgun Gothic", "맑은 고딕", sans-serif');
+        setFontSize(project.config.fontSize || 15);
       }
       */
       setCategories(prev => Array.from(new Set([...prev, ...(project.categories || INITIAL_CATEGORIES)])));
@@ -1646,8 +1650,6 @@ export default function App() {
       const { items: normalized } = normalizeAllItemsSections(healed);
       setItems(normalized);
       setTheme((pendingSession as any).theme);
-      if ((pendingSession as any).fontFamily) setFontFamily((pendingSession as any).fontFamily);
-      if ((pendingSession as any).fontSize) setFontSize((pendingSession as any).fontSize);
       if ((pendingSession as any).categories && Array.isArray((pendingSession as any).categories) && (pendingSession as any).categories.length > 0) {
         setCategories((pendingSession as any).categories);
       }
