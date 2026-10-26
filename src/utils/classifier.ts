@@ -169,7 +169,7 @@ export function isDesignChangeItem(item: Pick<SpecItem, 'name' | 'specification'
  * 7. 밸브류: 게이트·버터플라이·체크밸브, 스트레이너, 플랙시블조인트, 수격방지기, 압력계, 목긴볼밸브, 볼밸브
  */
 export const SLEEVE_CATEGORY = '스리브+고정틀+내화채움재';
-export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-세대환기', '외주-덕트공사', '외주-전열교환기', '지급자재', '간접비', SLEEVE_CATEGORY,
+export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-세대환기', '외주-덕트공사', '외주-전열교환기', '외주-열선', '지급자재', '간접비', SLEEVE_CATEGORY,
   'STS위생부속', 'STS난방부속', 'STS위생관', 'STS난방관', '밸브류'];
 
 // 공정 구분: 난방 / 위생(위생·급수·급탕·배수)
@@ -198,11 +198,14 @@ export function builtInClassify(item: SpecItem): { category: string; remark: str
   if (isUnitVentDuctPath(path)) {
     return { category: '외주-세대환기', remark: '외주-세대환기 (세대내 환기덕트 공정)' };
   }
-  if (path.includes('환기덕트')) {
-    return { category: '외주-덕트공사', remark: '외주-덕트공사 (환기덕트 공정)' };
+  if (path.includes('환기덕트') || path.includes('덕트설치')) {
+    return { category: '외주-덕트공사', remark: '외주-덕트공사 (환기덕트·덕트설치 공정)' };
   }
   if (path.includes('전열교환기')) {
     return { category: '외주-전열교환기', remark: '외주-전열교환기 (전열교환기 공정)' };
+  }
+  if (path.includes('열선')) {
+    return { category: '외주-열선', remark: '외주-열선 (동파방지열선 공정)' };
   }
   const qty = Number(item.quantity) || 0;
   const mPrice = Number(item.materialUnitPrice) || 0;

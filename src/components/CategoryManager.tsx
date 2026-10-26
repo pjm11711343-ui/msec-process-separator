@@ -781,11 +781,15 @@ export default function CategoryManager({
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">외주-덕트공사</span>
-                    <span>그 외 <b>환기덕트</b> 공정(기계실·주차장·근생·부대시설 등)의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
+                    <span>그 외 <b>환기덕트설치공사·덕트설치공사</b>(기계실·주차장·근생·부대시설 등)의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">외주-전열교환기</span>
-                    <span><b>전열교환기</b> 공정의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
+                    <span><b>단위세대 전열교환기·전열교환기설치공사</b>의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">외주-열선</span>
+                    <span><b>동파방지열선공사</b>의 모든 품목</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">지급자재</span>
