@@ -894,8 +894,8 @@ export async function exportStyledExcel({
       rowObj.sectionQty[sec] = (rowObj.sectionQty[sec] || 0) + qty;
     } else {
       // Keep both in original category, but separate rows
-      // 1. Material
-      if (matAmt > 0 || labAmt === 0) {
+      // 품목 1행 (노무비만 있는 품목도 수량은 표시)
+      {
         const cat = itemCat;
         const unitPrice = item.materialUnitPrice || (qty > 0 ? matAmt / qty : 0);
         const amt = matAmt;
@@ -912,25 +912,7 @@ export async function exportStyledExcel({
         rowObj.sectionQty[sec] = (rowObj.sectionQty[sec] || 0) + qty;
       }
       
-      // 2. Labor
-      if (labAmt > 0) {
-        const cat = itemCat;
-        const laborName = `[노무비] ${name}`;
-        const unitPrice = item.laborUnitPrice || (qty > 0 ? labAmt / qty : 0);
-        const amt = labAmt;
-        
-        if (!exportCategoryMap.has(cat)) exportCategoryMap.set(cat, new Map());
-        const itemMap = exportCategoryMap.get(cat)!;
-        // Include 'Labor' in key to differentiate from same-named material items if any
-        const key = `${laborName}:::${spec}:::${unit}:::${unitPrice}:::LABOR`;
-        if (!itemMap.has(key)) {
-          itemMap.set(key, { name: laborName, spec, unit, unitPrice, totalQty: 0, totalAmount: 0, sectionQty: {} });
-        }
-        const rowObj = itemMap.get(key)!;
-        rowObj.totalQty += qty;
-        rowObj.totalAmount += amt;
-        rowObj.sectionQty[sec] = (rowObj.sectionQty[sec] || 0) + qty;
-      }
+      // [노무비] 별도 행은 만들지 않음 (집계표에는 품목별 1행만 표시)
     }
   });
 

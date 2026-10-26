@@ -226,17 +226,12 @@ export default function CategoryMatrixView({
       } else {
         // Keep both in original category, but separate rows
         // 1. Material
-        if (matAmt > 0 || labAmt === 0) {
+        {
           const unitPrice = item.materialUnitPrice || (quantity > 0 ? matAmt / quantity : 0);
           addMatrixEntry(itemCat, name, spec, unit, quantity, matAmt, unitPrice, section);
         }
         
-        // 2. Labor
-        if (labAmt > 0) {
-          const laborName = `[노무비] ${name}`;
-          const unitPrice = item.laborUnitPrice || (quantity > 0 ? labAmt / quantity : 0);
-          addMatrixEntry(itemCat, laborName, spec, unit, quantity, labAmt, unitPrice, section, ':::LABOR');
-        }
+        // [노무비] 별도 행은 만들지 않음
       }
     });
 
