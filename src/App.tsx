@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { SpecItem, ThemeType, Project, CustomClassificationRule, INITIAL_CATEGORIES, SeparationMethod, ProcessCodeEntry } from './types';
 import { applyProcessCodeTable } from './utils/processCodeTable';
 import ProcessCodeManager from './components/ProcessCodeManager';
-import { autoClassify } from './utils/classifier';
+import { autoClassify, DESIGN_CHANGE_CATEGORY } from './utils/classifier';
 import { exportStyledExcel } from './utils/excelExport';
 import { healItem } from './utils/costCalculation';
 import { recordRuleExecutionFeedback } from './utils/patternAnalytics';
@@ -490,6 +490,9 @@ export default function App() {
           return item;
         });
       });
+      if (!categories.includes(DESIGN_CHANGE_CATEGORY) && items.some(i => autoClassify(i, updatedRules).category === DESIGN_CHANGE_CATEGORY)) {
+        handleUpdateCategoryList([...categories, DESIGN_CHANGE_CATEGORY]);
+      }
       showNotification(`분류 규칙 일괄 적용 완료! ${changedCount}개의 품목 카테고리가 재조정되었습니다.`, 'success');
     });
   };
@@ -1627,6 +1630,9 @@ export default function App() {
                     section: bi.section,
                     sectionParent: bi.sectionParent ?? sectionInfoForClassify.get(bi.id)?.parents.join(' › ') ?? '',
                     materialUnitPrice: bi.materialUnitPrice,
+                    unit: bi.unit,
+                    quantity: bi.quantity,
+                    unitPrice: bi.unitPrice,
                     laborUnitPrice: bi.laborUnitPrice,
                     remark: bi.remark
                   })),
@@ -1687,6 +1693,7 @@ export default function App() {
         });
         
         setItems(newItems);
+        ensureCategoriesExist(newItems);
         showNotification(`총 ${targetItems.length}개의 항목이 분류되었습니다.`, 'success');
       } catch (error: any) {
         console.error('Classification failed:', error);
@@ -2093,6 +2100,13 @@ export default function App() {
     });
   };
 
+  // 자동 분류로 새로 쓰인 기본 카테고리(설계변경 등)가 카테고리 목록에 없으면 추가
+  const ensureCategoriesExist = (list: SpecItem[]) => {
+    const builtIn = [DESIGN_CHANGE_CATEGORY];
+    const missing = builtIn.filter(c => !categories.includes(c) && list.some(i => i.category === c));
+    if (missing.length > 0) handleUpdateCategoryList([...categories, ...missing]);
+  };
+
   const handleSaveProcessCodes = (codes: ProcessCodeEntry[], apply: boolean) => {
     setProjectMetadata(prev => ({ ...prev, processCodes: codes }));
     setIsProcessCodeOpen(false);
@@ -2144,6 +2158,7 @@ export default function App() {
     });
     
     const { items: normalizedClassified } = normalizeAllItemsSections(classifiedItems);
+    ensureCategoriesExist(normalizedClassified);
     setItems(normalizedClassified);
     setWorkbook(wb);
     showNotification(`엑셀 파일 업로드 완료: ${normalizedClassified.length}개의 항목을 불러왔으며, 공종 계층 표준화 및 규칙 기반 자동 분류가 적용되었습니다.`, 'success');

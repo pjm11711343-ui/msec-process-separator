@@ -58,6 +58,15 @@ export async function classifyItems(items: any[], categories: string[], customRu
       let category = '';
       const name = item.name.replace(/\s+/g, '');
 
+      // 설계변경: 품명·규격·단위는 있는데 수량 0, 단가 0원 (Sync with utils/classifier.ts isDesignChangeItem)
+      const has = (v: any) => !!(v && String(v).trim());
+      const zero = (v: any) => !v || Number(v) === 0;
+      if (has(item.name) && has(item.specification) && has(item.unit) && zero(item.quantity)
+        && zero(item.materialUnitPrice) && zero(item.laborUnitPrice) && zero(item.unitPrice)) {
+        results.push({ id: item.id, category: '설계변경' });
+        return;
+      }
+
       // 0. Price Rule (Sync with utils/classifier.ts)
       // If both material and labor unit prices are 0, classify as "지금자재"
       if (item.materialUnitPrice === 0 && item.laborUnitPrice === 0) {

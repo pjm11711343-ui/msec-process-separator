@@ -688,6 +688,20 @@ export default function CategoryManager({
           ) : activeTab === 'rules' ? (
             /* --- RULES TAB (CLASSIFICATION RULES) --- */
             <div className="space-y-6">
+              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 text-xs">
+                <div className="font-black text-slate-700 mb-2">기본 자동 분류 규칙 (사용자 규칙보다 먼저 적용)</div>
+                <ul className="space-y-1.5 text-slate-600">
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 font-bold">설계변경</span>
+                    <span>품명·규격·단위는 있는데 <b>수량 0</b>, <b>단가 0원</b>(재료비·노무비·합계)인 품목</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">지금자재</span>
+                    <span>재료비·노무비 단가가 0원인 품목 (설계변경에 해당하지 않는 경우)</span>
+                  </li>
+                </ul>
+                <p className="mt-2 text-[10px] text-slate-400">이미 올린 내역에는 아래 [현재 시트 데이터에 분류 규칙 즉시 적용]을 누르면 반영됩니다.</p>
+              </div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-indigo-600 rounded-2xl shadow-md text-white">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-white/20 rounded-lg">

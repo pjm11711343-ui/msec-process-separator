@@ -140,11 +140,32 @@ const MAPPING_RULES: Record<string, string> = {
   '공구손료': '공구손료'
 };
 
+export const DESIGN_CHANGE_CATEGORY = '설계변경';
+
+/**
+ * 설계변경 품목: 품명·규격·단위는 있는데 수량 0, 단가(재료비·노무비·합계) 모두 0원
+ * (설계변경으로 삭제/미적용된 내역 줄)
+ */
+export function isDesignChangeItem(item: Pick<SpecItem, 'name' | 'specification' | 'unit' | 'quantity' | 'materialUnitPrice' | 'laborUnitPrice' | 'unitPrice'> & { materialAmount?: number; laborAmount?: number; amount?: number }): boolean {
+  if (!item) return false;
+  const has = (v?: string) => !!(v && String(v).trim());
+  const zero = (v?: number) => !v || Number(v) === 0;
+  return has(item.name) && has(item.specification) && has(item.unit)
+    && zero(item.quantity)
+    && zero(item.materialUnitPrice) && zero(item.laborUnitPrice) && zero(item.unitPrice)
+    && zero(item.materialAmount) && zero(item.laborAmount) && zero(item.amount);
+}
+
 export function autoClassify(
   item: SpecItem, 
   customRules?: CustomClassificationRule[]
 ): { category: string; remark: string } {
   if (!item) return { category: '미분류', remark: '데이터 없음' };
+
+  // Rule: 품명·규격·단위는 있는데 수량 0, 단가 0원 → 설계변경 (지금자재보다 먼저 판단)
+  if (isDesignChangeItem(item)) {
+    return { category: DESIGN_CHANGE_CATEGORY, remark: '설계변경 (수량 0·단가 0원)' };
+  }
   
   // Rule: If material price is 0 but labor price/amount is greater than 0, classify as "미분류"
   if ((!item.materialUnitPrice || item.materialUnitPrice === 0) && (item.laborUnitPrice > 0 || item.laborAmount > 0)) {
