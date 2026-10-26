@@ -696,8 +696,20 @@ export default function CategoryManager({
                     <span>품명·규격·단위는 있는데 <b>수량 0</b>, <b>단가 0원</b>(재료비·노무비·합계)인 품목</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">지금자재</span>
-                    <span>재료비·노무비 단가가 0원인 품목 (설계변경에 해당하지 않는 경우)</span>
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">외주-덕트공사</span>
+                    <span><b>환기덕트</b> 공정의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">외주-전열교환기</span>
+                    <span><b>전열교환기</b> 공정의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold">지급자재</span>
+                    <span><b>수량은 있는데</b> 재료비·노무비 단가가 0원인 품목</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 font-bold">간접비</span>
+                    <span><b>수량은 있는데</b> 재료비 단가 0원, 노무비만 있는 품목</span>
                   </li>
                 </ul>
                 <p className="mt-2 text-[10px] text-slate-400">이미 올린 내역에는 아래 [현재 시트 데이터에 분류 규칙 즉시 적용]을 누르면 반영됩니다.</p>

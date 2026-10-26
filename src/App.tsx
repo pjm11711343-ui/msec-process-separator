@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { SpecItem, ThemeType, Project, CustomClassificationRule, INITIAL_CATEGORIES, SeparationMethod, ProcessCodeEntry } from './types';
 import { applyProcessCodeTable } from './utils/processCodeTable';
 import ProcessCodeManager from './components/ProcessCodeManager';
-import { autoClassify, DESIGN_CHANGE_CATEGORY } from './utils/classifier';
+import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES } from './utils/classifier';
 import { exportStyledExcel } from './utils/excelExport';
 import { healItem } from './utils/costCalculation';
 import { recordRuleExecutionFeedback } from './utils/patternAnalytics';
@@ -426,7 +426,7 @@ export default function App() {
     }
     return [
       { id: 'rule-sample-1', pattern: '소음방지', category: 'PB', isEnabled: true, priority: 20, description: '소음방지 키워드 매칭 기본 규칙' },
-      { id: 'rule-sample-2', pattern: '안전보호구', category: '지금자재', isEnabled: true, priority: 10, description: '안전 장비 및 수동 보호구 자동 지금자재 처리용' }
+      { id: 'rule-sample-2', pattern: '안전보호구', category: '지급자재', isEnabled: true, priority: 10, description: '안전 장비 및 수동 보호구 자동 지급자재 처리용' }
     ];
   });
 
@@ -490,8 +490,9 @@ export default function App() {
           return item;
         });
       });
-      if (!categories.includes(DESIGN_CHANGE_CATEGORY) && items.some(i => autoClassify(i, updatedRules).category === DESIGN_CHANGE_CATEGORY)) {
-        handleUpdateCategoryList([...categories, DESIGN_CHANGE_CATEGORY]);
+      const usedBuiltIn = BUILT_IN_CATEGORIES.filter(c => !categories.includes(c) && items.some(i => autoClassify(i, updatedRules).category === c));
+      if (usedBuiltIn.length > 0) {
+        handleUpdateCategoryList([...categories, ...usedBuiltIn]);
       }
       showNotification(`분류 규칙 일괄 적용 완료! ${changedCount}개의 품목 카테고리가 재조정되었습니다.`, 'success');
     });
@@ -2102,7 +2103,7 @@ export default function App() {
 
   // 자동 분류로 새로 쓰인 기본 카테고리(설계변경 등)가 카테고리 목록에 없으면 추가
   const ensureCategoriesExist = (list: SpecItem[]) => {
-    const builtIn = [DESIGN_CHANGE_CATEGORY];
+    const builtIn = BUILT_IN_CATEGORIES;
     const missing = builtIn.filter(c => !categories.includes(c) && list.some(i => i.category === c));
     if (missing.length > 0) handleUpdateCategoryList([...categories, ...missing]);
   };

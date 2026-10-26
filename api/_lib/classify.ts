@@ -67,10 +67,22 @@ export async function classifyItems(items: any[], categories: string[], customRu
         return;
       }
 
+      // 공정 기준 외주 (Sync with utils/classifier.ts builtInClassify)
+      const path = `${item.sectionParent || ''} ${item.section || ''}`.replace(/\s+/g, '');
+      if (path.includes('환기덕트')) { results.push({ id: item.id, category: '외주-덕트공사' }); return; }
+      if (path.includes('전열교환기')) { results.push({ id: item.id, category: '외주-전열교환기' }); return; }
+
+      // 수량 있음 + 재료비·노무비 단가 0원 → 지급자재 / 노무비만 → 간접비
+      const qty = Number(item.quantity) || 0;
+      const mPrice = Number(item.materialUnitPrice) || 0;
+      const lPrice = Number(item.laborUnitPrice) || 0;
+      if (qty > 0 && mPrice === 0 && lPrice === 0) { results.push({ id: item.id, category: '지급자재' }); return; }
+      if (qty > 0 && mPrice === 0 && lPrice > 0) { results.push({ id: item.id, category: '간접비' }); return; }
+
       // 0. Price Rule (Sync with utils/classifier.ts)
-      // If both material and labor unit prices are 0, classify as "지금자재"
+      // If both material and labor unit prices are 0, classify as "지급자재"
       if (item.materialUnitPrice === 0 && item.laborUnitPrice === 0) {
-        category = '지금자재';
+        category = '지급자재';
       } else {
         // Check custom rules first!
         let customMatched = false;

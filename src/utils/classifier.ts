@@ -132,10 +132,10 @@ const MAPPING_RULES: Record<string, string> = {
   '소방용CPVC': 'CPVC 소방관',
   'CPVC이음관': 'CPVC 소방부속',
   '템퍼스위치': '소방부속',
-  '양변기': '지금자재',
-  '소변기': '지금자재',
-  '세면기': '지금자재',
-  '샤워수전': '지금자재',
+  '양변기': '지급자재',
+  '소변기': '지급자재',
+  '세면기': '지급자재',
+  '샤워수전': '지급자재',
   '트랩': 'PVC',
   '공구손료': '공구손료'
 };
@@ -156,16 +156,49 @@ export function isDesignChangeItem(item: Pick<SpecItem, 'name' | 'specification'
     && zero(item.materialAmount) && zero(item.laborAmount) && zero(item.amount);
 }
 
+/**
+ * 기본 자동 분류 규칙 (사용자 규칙보다 먼저 적용)
+ * 1. 설계변경: 품명·규격·단위 있고 수량 0, 단가 0원
+ * 2. 공정 기준 외주: 환기덕트 공정 → 외주-덕트공사 / 전열교환기 공정 → 외주-전열교환기
+ *    (공정 안의 공구손료·잡재료비·페인트칠 등 모든 품목 포함)
+ * 3. 지급자재: 수량은 있는데 재료비·노무비 단가 0원
+ * 4. 간접비: 수량은 있는데 재료비 단가 0원, 노무비만 있음
+ */
+export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-덕트공사', '외주-전열교환기', '지급자재', '간접비'];
+
+export function builtInClassify(item: SpecItem): { category: string; remark: string } | null {
+  if (!item) return null;
+  if (isDesignChangeItem(item)) {
+    return { category: DESIGN_CHANGE_CATEGORY, remark: '설계변경 (수량 0·단가 0원)' };
+  }
+  const path = `${item.sectionParent || ''} ${item.section || ''}`.replace(/\s+/g, '');
+  if (path.includes('환기덕트')) {
+    return { category: '외주-덕트공사', remark: '외주-덕트공사 (환기덕트 공정)' };
+  }
+  if (path.includes('전열교환기')) {
+    return { category: '외주-전열교환기', remark: '외주-전열교환기 (전열교환기 공정)' };
+  }
+  const qty = Number(item.quantity) || 0;
+  const mPrice = Number(item.materialUnitPrice) || 0;
+  const lPrice = Number(item.laborUnitPrice) || 0;
+  if (qty > 0 && mPrice === 0 && lPrice === 0) {
+    return { category: '지급자재', remark: '지급자재 (재료비·노무비 단가 0원)' };
+  }
+  if (qty > 0 && mPrice === 0 && (lPrice > 0 || (Number(item.laborAmount) || 0) > 0)) {
+    return { category: '간접비', remark: '간접비 (노무비만 있음)' };
+  }
+  return null;
+}
+
 export function autoClassify(
   item: SpecItem, 
   customRules?: CustomClassificationRule[]
 ): { category: string; remark: string } {
   if (!item) return { category: '미분류', remark: '데이터 없음' };
 
-  // Rule: 품명·규격·단위는 있는데 수량 0, 단가 0원 → 설계변경 (지금자재보다 먼저 판단)
-  if (isDesignChangeItem(item)) {
-    return { category: DESIGN_CHANGE_CATEGORY, remark: '설계변경 (수량 0·단가 0원)' };
-  }
+  // 기본 자동 분류 규칙 (설계변경 / 공정 기준 외주 / 지급자재 / 간접비)
+  const builtIn = builtInClassify(item);
+  if (builtIn) return builtIn;
   
   // Rule: If material price is 0 but labor price/amount is greater than 0, classify as "미분류"
   if ((!item.materialUnitPrice || item.materialUnitPrice === 0) && (item.laborUnitPrice > 0 || item.laborAmount > 0)) {
@@ -181,9 +214,9 @@ export function autoClassify(
   if (cleanCat === 'STS위생관') category = 'STS위생관';
   if (cleanCat === 'STS위생부속') category = 'STS위생부속';
 
-  // Rule: If both material and labor prices are 0, classify as "지금자재"
+  // Rule: 재료비·노무비 단가 0원 (수량 없음, 설계변경 아님) → 지급자재
   if (item.materialUnitPrice === 0 && item.laborUnitPrice === 0) {
-    return { category: '지금자재', remark: '지금자재' };
+    return { category: '지급자재', remark: '지급자재' };
   }
 
   // 1. Apply user custom rules first
