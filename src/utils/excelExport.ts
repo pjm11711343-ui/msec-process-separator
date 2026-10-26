@@ -9,7 +9,7 @@ import {
   isIndirectCostCategory,
   isClientSuppliedCategory
 } from './costCalculation';
-import { extractProcessCode, LEVEL_1_PROCESS_NAMES, LEVEL_2_PROCESS_NAMES, buildSectionDisplayInfo } from './sectionHierarchy';
+import { extractProcessCode, LEVEL_1_PROCESS_NAMES, LEVEL_2_PROCESS_NAMES, buildSectionDisplayInfo, buildMatrixHeaderLookup, matrixHeaderFor } from './sectionHierarchy';
 
 interface ExportOptions {
   projectName?: string;
@@ -26,6 +26,8 @@ export async function exportStyledExcel({
   hidePriceAndAmount = false,
   autoHideEmptySectionCols = true
 }: ExportOptions): Promise<void> {
+  // 집계표 열 머리글: 현장 데이터의 실제 공종명 사용
+  const headerLookup = buildMatrixHeaderLookup(items);
   if (!items || items.length === 0) {
     throw new Error('내보낼 데이터가 없습니다.');
   }
@@ -820,6 +822,9 @@ export async function exportStyledExcel({
       subGroup = sec.replace(/^\d+[\s._-]*/, '').trim() || sec;
     }
 
+    const dynHeader = matrixHeaderFor(sec, headerLookup);
+    if (dynHeader) { mainGroup = dynHeader.mainGroup; subGroup = dynHeader.subGroup; }
+
     const cellTop = matrixSheet.getRow(1).getCell(colNum);
     cellTop.value = mainGroup;
 
@@ -1300,6 +1305,9 @@ export async function exportStyledExcel({
       } else if (/^\d+/.test(sec)) {
         subGroup = sec.replace(/^\d+[\s._-]*/, '').trim() || sec;
       }
+
+      const dynHeader = matrixHeaderFor(sec, headerLookup);
+      if (dynHeader) { mainGroup = dynHeader.mainGroup; subGroup = dynHeader.subGroup; }
 
       const cellTop = catSheet.getRow(1).getCell(colNum);
       cellTop.value = mainGroup;

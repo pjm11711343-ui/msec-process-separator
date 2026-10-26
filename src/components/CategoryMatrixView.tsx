@@ -37,7 +37,7 @@ import {
   isIndirectCostCategory,
   isClientSuppliedCategory
 } from '../utils/costCalculation';
-import { LEVEL_1_PROCESS_NAMES, LEVEL_2_PROCESS_NAMES, extractProcessCode } from '../utils/sectionHierarchy';
+import { LEVEL_1_PROCESS_NAMES, LEVEL_2_PROCESS_NAMES, extractProcessCode, buildMatrixHeaderLookup, matrixHeaderFor } from '../utils/sectionHierarchy';
 
 interface Props {
   items: SpecItem[];
@@ -340,6 +340,9 @@ export default function CategoryMatrixView({
     });
   }, [allSections, hiddenSections, autoHideEmptySectionCols, grandTotal.sectionTotals]);
 
+  // 집계표 열 머리글: 현장 데이터의 실제 공종명 사용
+  const headerLookup = useMemo(() => buildMatrixHeaderLookup(items), [items]);
+
   // 6. Parse section headers into 2-tier (대공종 / 세부구간)
   const parsedSections = useMemo(() => {
     return visibleSections.map(sec => {
@@ -382,6 +385,9 @@ export default function CategoryMatrixView({
         // Strip leading numbers like "010102 옥외배관공사" -> main: "기계설비", sub: "옥외배관공사"
         subGroup = sec.replace(/^\d+[\s._-]*/, '').trim() || sec;
       }
+
+      const dynHeader = matrixHeaderFor(sec, headerLookup);
+      if (dynHeader) { mainGroup = dynHeader.mainGroup; subGroup = dynHeader.subGroup; }
 
       return {
         raw: sec,

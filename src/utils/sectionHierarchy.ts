@@ -803,3 +803,59 @@ export function buildSectionDisplayInfo(items: SpecItem[]): Map<string, SectionD
 
   return result;
 }
+
+/**
+ * 구간집계표(매트릭스) 열 머리글용 공종명 조회 — 현장 데이터(공정명·상위 공정 경로)의 실제 이름 우선,
+ * 없을 때만 기본 공종표 사용 (현장마다 코드 의미가 달라 010101 이 '가설공사'로 나오던 문제 방지)
+ */
+export interface MatrixHeaderLookup {
+  l0: Record<string, string>; // 4자리
+  l1: Record<string, string>; // 6자리
+  l2: Record<string, string>; // 8자리
+}
+
+export function buildMatrixHeaderLookup(items: SpecItem[]): MatrixHeaderLookup {
+  const l0: Record<string, string> = {};
+  const l1: Record<string, string> = {};
+  const l2: Record<string, string> = {};
+  const add = (text: string) => {
+    const t = (text || '').trim();
+    const m4 = t.match(/^(\d{4})\s+(\S.*)$/);
+    if (m4) { l0[m4[1]] = m4[2].trim(); return; }
+    const parsed = extractProcessCode(t);
+    if (!parsed || !parsed.rest) return;
+    if (parsed.code.length === 6) l1[parsed.code] = parsed.rest;
+    else if (parsed.code.length === 8) l2[parsed.code] = parsed.rest;
+  };
+  (items || []).forEach(item => {
+    if (item.sectionParent) item.sectionParent.split(' › ').forEach(add);
+    if (item.section) add(item.section);
+  });
+  return { l0, l1, l2 };
+}
+
+export function matrixHeaderFor(sec: string, lookup: MatrixHeaderLookup): { mainGroup: string; subGroup: string } | null {
+  const parsed = extractProcessCode(sec);
+  if (!parsed) return null;
+  const { code, rest } = parsed;
+  const n0 = (c: string) => lookup.l0[c.slice(0, 4)] || '';
+  const n1 = (c: string) => lookup.l1[c.slice(0, 6)] || LEVEL_1_PROCESS_NAMES[c.slice(0, 6)] || '';
+  const n2 = (c: string) => lookup.l2[c.slice(0, 8)] || LEVEL_2_PROCESS_NAMES[c.slice(0, 8)]?.name || '';
+
+  if (code.length === 10) {
+    const name1 = n1(code);
+    const name2 = n2(code);
+    const combined = name1 && name2 ? combineParentProcessNames(name1, name2) : (name2 || name1);
+    let sub = stripParentFromRest(rest, combined, name2, name1);
+    const staticCombined = LEVEL_2_PROCESS_NAMES[code.slice(0, 8)]?.combined;
+    if (staticCombined && !lookup.l2[code.slice(0, 8)]) sub = stripParentFromRest(sub, staticCombined);
+    return { mainGroup: combined || '기계설비', subGroup: sub || rest || sec };
+  }
+  if (code.length === 8) {
+    return { mainGroup: n1(code) || n0(code) || '기계설비', subGroup: rest || n2(code) || sec };
+  }
+  if (code.length === 6) {
+    return { mainGroup: n0(code) || '기계설비', subGroup: rest || n1(code) || sec };
+  }
+  return null;
+}
