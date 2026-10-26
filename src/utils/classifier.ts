@@ -159,14 +159,20 @@ export function isDesignChangeItem(item: Pick<SpecItem, 'name' | 'specification'
 /**
  * 기본 자동 분류 규칙 (사용자 규칙보다 먼저 적용)
  * 1. 설계변경: 품명·규격·단위 있고 수량 0, 단가 0원
- * 2. 공정 기준 외주: 환기덕트 공정 → 외주-덕트공사 / 전열교환기 공정 → 외주-전열교환기
+ * 2. 공정 기준 외주: 세대내 환기덕트 공정 → 외주-세대환기 / 그 외 환기덕트 공정 → 외주-덕트공사 / 전열교환기 공정 → 외주-전열교환기
  *    (공정 안의 공구손료·잡재료비·페인트칠 등 모든 품목 포함)
  * 3. 지급자재: 수량은 있는데 재료비·노무비 단가 0원
  * 4. 간접비: 수량은 있는데 재료비 단가 0원, 노무비만 있음
  * 5. 스리브+고정틀+내화채움재: 품명에 '스리브'가 들어간 품목 (세면기스리브·양변기스리브 내화채움구조 등)
  */
 export const SLEEVE_CATEGORY = '스리브+고정틀+내화채움재';
-export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-덕트공사', '외주-전열교환기', '지급자재', '간접비', SLEEVE_CATEGORY];
+export const BUILT_IN_CATEGORIES = [DESIGN_CHANGE_CATEGORY, '외주-세대환기', '외주-덕트공사', '외주-전열교환기', '지급자재', '간접비', SLEEVE_CATEGORY];
+
+/** 세대내(단위세대) 환기덕트 공정인지 — 공정 경로(상위 공정 포함) 기준 */
+export function isUnitVentDuctPath(path: string): boolean {
+  const p = (path || '').replace(/\s+/g, '');
+  return p.includes('환기덕트') && (p.includes('세대내') || p.includes('단위세대') || p.includes('세대환기덕트'));
+}
 
 export function builtInClassify(item: SpecItem): { category: string; remark: string } | null {
   if (!item) return null;
@@ -174,6 +180,9 @@ export function builtInClassify(item: SpecItem): { category: string; remark: str
     return { category: DESIGN_CHANGE_CATEGORY, remark: '설계변경 (수량 0·단가 0원)' };
   }
   const path = `${item.sectionParent || ''} ${item.section || ''}`.replace(/\s+/g, '');
+  if (isUnitVentDuctPath(path)) {
+    return { category: '외주-세대환기', remark: '외주-세대환기 (세대내 환기덕트 공정)' };
+  }
   if (path.includes('환기덕트')) {
     return { category: '외주-덕트공사', remark: '외주-덕트공사 (환기덕트 공정)' };
   }

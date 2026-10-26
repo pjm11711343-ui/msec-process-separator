@@ -69,6 +69,9 @@ export async function classifyItems(items: any[], categories: string[], customRu
 
       // 공정 기준 외주 (Sync with utils/classifier.ts builtInClassify)
       const path = `${item.sectionParent || ''} ${item.section || ''}`.replace(/\s+/g, '');
+      if (path.includes('환기덕트') && (path.includes('세대내') || path.includes('단위세대') || path.includes('세대환기덕트'))) {
+        results.push({ id: item.id, category: '외주-세대환기' }); return;
+      }
       if (path.includes('환기덕트')) { results.push({ id: item.id, category: '외주-덕트공사' }); return; }
       if (path.includes('전열교환기')) { results.push({ id: item.id, category: '외주-전열교환기' }); return; }
 

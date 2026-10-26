@@ -696,8 +696,12 @@ export default function CategoryManager({
                     <span>품명·규격·단위는 있는데 <b>수량 0</b>, <b>단가 0원</b>(재료비·노무비·합계)인 품목</span>
                   </li>
                   <li className="flex items-start gap-2">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">외주-세대환기</span>
+                    <span><b>세대내 환기덕트</b> 공정의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">외주-덕트공사</span>
-                    <span><b>환기덕트</b> 공정의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
+                    <span>그 외 <b>환기덕트</b> 공정(기계실·주차장·근생·부대시설 등)의 모든 품목 (공구손료·잡재료비·페인트칠 포함)</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold">외주-전열교환기</span>
