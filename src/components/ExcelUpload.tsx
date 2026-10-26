@@ -2,15 +2,19 @@
 import React, { useRef, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Upload, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { SpecItem } from '../types';
+import { SpecItem, ProcessCodeEntry } from '../types';
+import { extractProcessCodesFromWorkbook } from '../utils/processCodeTable';
 import { HierarchicalSectionTracker, normalizeAllItemsSections, extractProcessCode } from '../utils/sectionHierarchy';
 
 interface Props {
-  onDataLoaded: (items: SpecItem[], workbook: XLSX.WorkBook) => void;
+  /** 3번째 인자: 파일 집계표에서 찾은 공종표 (현장 공종표가 비어 있을 때 자동 등록용) */
+  onDataLoaded: (items: SpecItem[], workbook: XLSX.WorkBook, detectedCodes?: ProcessCodeEntry[]) => void;
   variant?: 'button' | 'dropzone';
+  /** 현장에 등록된 공종표 — 있으면 이 표의 코드·공종명이 최우선 */
+  processCodes?: ProcessCodeEntry[];
 }
 
-export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props) {
+export default function ExcelUpload({ onDataLoaded, variant = 'button', processCodes }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -427,6 +431,9 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
           }));
         });
         if (seed.length > 0) sectionTracker.seedNames(seed);
+        // 현장에 등록된 공종표가 있으면 그 이름이 최우선
+        if (processCodes && processCodes.length > 0) sectionTracker.seedNames(processCodes);
+        const detectedCodes = extractProcessCodesFromWorkbook(wb, wsname);
         const items: SpecItem[] = [];
 
         // Determine actual data start index
@@ -834,7 +841,7 @@ export default function ExcelUpload({ onDataLoaded, variant = 'button' }: Props)
         // Normalize all item sections hierarchically (e.g. 0101040102 세대내 난방 배관공사 76㎡ 단위세대)
         const { items: normalizedItems } = normalizeAllItemsSections(items);
 
-        onDataLoaded(normalizedItems, wb);
+        onDataLoaded(normalizedItems, wb, detectedCodes);
       } catch (error: any) {
         console.error('Excel processing error:', error);
         alert(`업로드 실패: ${error.message}`);

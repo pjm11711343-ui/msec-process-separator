@@ -40,6 +40,13 @@ export interface Project {
   highestFloor?: string;     // 최상층
   lowestFloor?: string;      // 최하층
   separationMethod?: SeparationMethod; // 집계 방식 (표준 vs 공정분리)
+  processCodes?: ProcessCodeEntry[]; // 현장 공종표 (현장명·대·중·소공종·세부단위)
+}
+
+/** 현장 공종표 한 줄: 2자리 현장명 / 4자리 대공종 / 6자리 중공종 / 8자리 소공종 / 10자리 세부단위 */
+export interface ProcessCodeEntry {
+  code: string;
+  name: string;
 }
 
 export type ThemeType = 'industrial' | 'modern' | 'minimal' | 'high-density';

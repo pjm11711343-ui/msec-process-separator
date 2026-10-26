@@ -4,7 +4,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { SpecItem, ThemeType, Project, CustomClassificationRule, INITIAL_CATEGORIES, SeparationMethod } from './types';
+import { SpecItem, ThemeType, Project, CustomClassificationRule, INITIAL_CATEGORIES, SeparationMethod, ProcessCodeEntry } from './types';
+import { applyProcessCodeTable } from './utils/processCodeTable';
+import ProcessCodeManager from './components/ProcessCodeManager';
 import { autoClassify } from './utils/classifier';
 import { exportStyledExcel } from './utils/excelExport';
 import { healItem } from './utils/costCalculation';
@@ -528,7 +530,9 @@ export default function App() {
     householdCount?: string;
     highestFloor?: string;
     lowestFloor?: string;
+    processCodes?: ProcessCodeEntry[];
   }>({});
+  const [isProcessCodeOpen, setIsProcessCodeOpen] = useState(false);
 
   const handleUpdateProjectMetadata = (key: string, value: string) => {
     setProjectMetadata(prev => {
@@ -836,6 +840,7 @@ export default function App() {
                   householdCount: cloudSession.householdCount,
                   highestFloor: cloudSession.highestFloor,
                   lowestFloor: cloudSession.lowestFloor,
+                  processCodes: cloudSession.processCodes || [],
                 });
                 setIsProjectLocked(!!cloudSession.isLocked);
                 const healed = (cloudSession.items || []).map(healItem);
@@ -1163,6 +1168,7 @@ export default function App() {
         householdCount: project.householdCount,
         highestFloor: project.highestFloor,
         lowestFloor: project.lowestFloor,
+        processCodes: project.processCodes || [],
       });
       
       // 세로(새로) 현장 선택 시 기본적으로 완료된 내역(completed) 상태 및 수정 락 활성화
@@ -1196,6 +1202,7 @@ export default function App() {
         householdCount: project.householdCount,
         highestFloor: project.highestFloor,
         lowestFloor: project.lowestFloor,
+        processCodes: project.processCodes || [],
         isLocked: true
       }).catch(console.warn);
 
@@ -2086,7 +2093,27 @@ export default function App() {
     });
   };
 
-  const handleDataLoaded = (newItems: SpecItem[], wb: XLSX.WorkBook) => {
+  const handleSaveProcessCodes = (codes: ProcessCodeEntry[], apply: boolean) => {
+    setProjectMetadata(prev => ({ ...prev, processCodes: codes }));
+    setIsProcessCodeOpen(false);
+    if (!apply) {
+      showNotification(`현장 공종표 ${codes.length}개가 저장되었습니다. 이제 내역서를 업로드하면 이 공종표대로 공정이 나뉩니다.`, 'success');
+      return;
+    }
+    checkLockAndProceed(() => {
+      const { items: applied, changed } = applyProcessCodeTable(items, codes);
+      setItems(applied);
+      showNotification(`공종표 ${codes.length}개 저장 및 적용 완료 — ${changed}개 품목의 공정명·상위 공정이 정리되었습니다.`, 'success');
+    });
+  };
+
+  const handleDataLoaded = (newItems: SpecItem[], wb: XLSX.WorkBook, detectedCodes?: ProcessCodeEntry[]) => {
+    // 현장 공종표가 비어 있으면 내역서 집계표에서 찾은 공종표를 자동 등록
+    const hasRegistered = (projectMetadata.processCodes || []).length > 0;
+    if (!hasRegistered && detectedCodes && detectedCodes.length > 0) {
+      setProjectMetadata(prev => ({ ...prev, processCodes: detectedCodes }));
+      setTimeout(() => showNotification(`내역서 집계표에서 공종표 ${detectedCodes.length}개를 찾아 현장 공종표로 자동 등록했습니다. [공종표] 버튼에서 확인·수정할 수 있습니다.`, 'info'), 4200);
+    }
     // Apply automatic classification based on rules immediately upon upload, and heal quantities
     const classifiedItems = newItems.map(rawItem => {
       const item = healItem(rawItem);
@@ -3214,6 +3241,8 @@ export default function App() {
                     onCategoryFilterChange={setCategoryFilter}
                     onOpenAnalysis={() => setIsAIAnalysisDrawerOpen(true)}
                     onOrganizeSectionHierarchy={handleOrganizeSectionHierarchy}
+                    processCodes={projectMetadata.processCodes}
+                    onOpenProcessCodes={() => setIsProcessCodeOpen(true)}
                   />
                 </>
               ) : activeTab === 'matrix' ? (
@@ -3232,6 +3261,18 @@ export default function App() {
                 <PriceAnalysis items={items} theme={theme} />
               )}
             </motion.div>
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {isProcessCodeOpen && (
+              <ProcessCodeManager
+                projectName={currentProjectName}
+                initialCodes={projectMetadata.processCodes || []}
+                hasItems={items.length > 0}
+                onClose={() => setIsProcessCodeOpen(false)}
+                onSave={handleSaveProcessCodes}
+              />
+            )}
           </AnimatePresence>
 
           <AnimatePresence>

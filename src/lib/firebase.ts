@@ -272,6 +272,7 @@ export async function saveProjectToFirestore(project: Project): Promise<void> {
       highestFloor: project.highestFloor || '',
       lowestFloor: project.lowestFloor || '',
       separationMethod: project.separationMethod || 'method2',
+      processCodes: project.processCodes || [],
       itemCount: project.items?.length || 0,
       serverSyncedAt: serverTimestamp()
     };
@@ -337,6 +338,7 @@ export function subscribeProjectsFromFirestore(callback: (projects: Project[]) =
             highestFloor: data.highestFloor,
             lowestFloor: data.lowestFloor,
             separationMethod: data.separationMethod || 'method2',
+            processCodes: Array.isArray(data.processCodes) ? data.processCodes : [],
             updatedAt: data.updatedAt || Date.now(),
             status: data.status || 'working'
           });
@@ -374,6 +376,7 @@ export async function saveActiveSessionToFirestore(session: {
   householdCount?: string;
   highestFloor?: string;
   lowestFloor?: string;
+  processCodes?: { code: string; name: string }[];
 }): Promise<void> {
   if (!checkQuotaState()) return;
 
@@ -394,6 +397,7 @@ export async function saveActiveSessionToFirestore(session: {
       householdCount: session.householdCount || '',
       highestFloor: session.highestFloor || '',
       lowestFloor: session.lowestFloor || '',
+      processCodes: session.processCodes || [],
       isLocked: !!session.isLocked,
       itemCount: session.items?.length || 0,
       updatedAt: Date.now(),
@@ -432,6 +436,7 @@ export function subscribeActiveSessionFromFirestore(
     householdCount?: string;
     highestFloor?: string;
     lowestFloor?: string;
+    processCodes?: { code: string; name: string }[];
     updatedAt: number;
   } | null) => void
 ): () => void {
@@ -462,6 +467,7 @@ export function subscribeActiveSessionFromFirestore(
             householdCount: data.householdCount,
             highestFloor: data.highestFloor,
             lowestFloor: data.lowestFloor,
+            processCodes: Array.isArray(data.processCodes) ? data.processCodes : [],
             updatedAt: data.updatedAt || 0
           });
         } else {

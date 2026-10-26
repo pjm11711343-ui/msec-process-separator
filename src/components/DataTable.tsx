@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { SpecItem, ThemeType } from '../types';
-import { Download, Table, Cpu, Filter, Maximize2, RotateCcw, Zap, Sparkles, AlertTriangle, User, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Layers, X, Search, History } from 'lucide-react';
+import { SpecItem, ProcessCodeEntry, ThemeType } from '../types';
+import { Download, Table, Cpu, Filter, Maximize2, RotateCcw, Zap, Sparkles, AlertTriangle, User, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Layers, X, Search, History, ListTree } from 'lucide-react';
 import ExcelUpload from './ExcelUpload';
 import { buildSectionDisplayInfo } from '../utils/sectionHierarchy';
 import * as XLSX from 'xlsx';
@@ -35,7 +35,9 @@ interface Props {
   onUpdateSections: (ids: string[], section: string) => void;
   onUpdateMemo: (id: string, memo: string) => void;
   onUpdateExecutionAmount: (id: string, amount: number) => void;
-  onDataLoaded: (items: SpecItem[], workbook: XLSX.WorkBook) => void;
+  onDataLoaded: (items: SpecItem[], workbook: XLSX.WorkBook, detectedCodes?: ProcessCodeEntry[]) => void;
+  processCodes?: ProcessCodeEntry[];
+  onOpenProcessCodes?: () => void;
   categoryFilter?: string;
   onCategoryFilterChange?: (category: string) => void;
   onOpenAnalysis?: () => void;
@@ -203,7 +205,9 @@ export default function DataTable({
   categoryFilter = 'all', 
   onCategoryFilterChange,
   onOpenAnalysis,
-  onOrganizeSectionHierarchy
+  onOrganizeSectionHierarchy,
+  processCodes,
+  onOpenProcessCodes
 }: Props) {
   const [viewMode, setViewMode] = useState<'process' | 'category' | 'unclassified'>('process');
   const [costViewType, setCostViewType] = useState<'total' | 'material' | 'labor'>('total');
@@ -966,7 +970,16 @@ export default function DataTable({
                  />
                  <span className="text-[10px] font-bold w-4">{density}</span>
                </div>
-               <ExcelUpload onDataLoaded={onDataLoaded} />
+               {onOpenProcessCodes && (
+                 <button
+                   onClick={onOpenProcessCodes}
+                   className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border transition-all ${processCodes && processCodes.length > 0 ? 'bg-white border-[#141414] text-[#141414]' : 'bg-amber-400 border-amber-500 text-black animate-pulse'}`}
+                   title="공정분리 전에 현장 공종표(현장명·대·중·소공종·세부단위)를 먼저 등록하세요"
+                 >
+                   공종표 {processCodes && processCodes.length > 0 ? `(${processCodes.length})` : '등록'}
+                 </button>
+               )}
+               <ExcelUpload onDataLoaded={onDataLoaded} processCodes={processCodes} />
                <button 
                   onClick={() => onClassify()}
                   disabled={isClassifying}
@@ -1058,7 +1071,17 @@ export default function DataTable({
                  />
                </div>
             </div>
-            <ExcelUpload onDataLoaded={onDataLoaded} />
+            {onOpenProcessCodes && (
+              <button
+                onClick={onOpenProcessCodes}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all shadow-sm text-sm font-medium ${processCodes && processCodes.length > 0 ? 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700' : 'bg-amber-50 border-amber-300 hover:bg-amber-100 text-amber-800'}`}
+                title="공정분리 전에 현장 공종표(현장명·대·중·소공종·세부단위)를 먼저 등록하세요"
+              >
+                <ListTree className="w-4 h-4" />
+                {processCodes && processCodes.length > 0 ? `공종표 (${processCodes.length})` : '① 공종표 등록'}
+              </button>
+            )}
+            <ExcelUpload onDataLoaded={onDataLoaded} processCodes={processCodes} />
             <button
               onClick={() => onClassify()}
               disabled={isClassifying}
@@ -1437,7 +1460,23 @@ export default function DataTable({
               <div className="py-24 text-center">
                 <div className="max-w-md mx-auto">
                   {items.length === 0 ? (
-                    <ExcelUpload onDataLoaded={onDataLoaded} variant="dropzone" />
+                    <div className="flex flex-col gap-3">
+                      {onOpenProcessCodes && (
+                        <button
+                          onClick={onOpenProcessCodes}
+                          className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-left ${processCodes && processCodes.length > 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-300 bg-amber-50 text-amber-900'}`}
+                        >
+                          <span className="flex items-center gap-2 text-sm font-bold">
+                            <ListTree className="w-4 h-4" />
+                            {processCodes && processCodes.length > 0
+                              ? `① 공종표 등록됨 (${processCodes.length}개) — 수정하려면 클릭`
+                              : '① 먼저 현장 공종표를 등록하세요 (현장명·대·중·소공종·세부단위)'}
+                          </span>
+                          <span className="text-xs opacity-70">{processCodes && processCodes.length > 0 ? '② 아래에 내역서 업로드' : '등록 없이 올리면 내역서 집계표로 자동 등록'}</span>
+                        </button>
+                      )}
+                      <ExcelUpload onDataLoaded={onDataLoaded} variant="dropzone" processCodes={processCodes} />
+                    </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2 text-slate-400">
                       <Filter className="w-12 h-12 opacity-20" />
