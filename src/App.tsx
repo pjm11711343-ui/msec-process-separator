@@ -8,6 +8,7 @@ import { SpecItem, ThemeType, Project, CustomClassificationRule, INITIAL_CATEGOR
 import { applyProcessCodeTable } from './utils/processCodeTable';
 import ProcessCodeManager from './components/ProcessCodeManager';
 import SnapshotManager from './components/SnapshotManager';
+import SnapshotCompare from './components/SnapshotCompare';
 import { SnapshotMeta, SnapshotKind, createSnapshot, subscribeSnapshots, loadSnapshot, deleteSnapshot, isSnapshotCloudOn } from './lib/snapshots';
 import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES, builtInClassify } from './utils/classifier';
 import { SiteLearning, aggregateLearning, learnFromItems, predictCategory, describePrediction } from './utils/learningModel';
@@ -628,6 +629,7 @@ export default function App() {
   const [snapshots, setSnapshots] = useState<SnapshotMeta[]>([]);
   const [isSnapshotOpen, setIsSnapshotOpen] = useState(false);
   const [snapshotBusy, setSnapshotBusy] = useState(false);
+  const [compareBase, setCompareBase] = useState<SnapshotMeta | null>(null);
   useEffect(() => subscribeSnapshots(setSnapshots), []);
 
   const handleUpdateProjectMetadata = (key: string, value: string) => {
@@ -3591,7 +3593,21 @@ export default function App() {
                 onSave={handleCreateSnapshot}
                 onRestore={handleRestoreSnapshot}
                 onExport={handleExportSnapshot}
+                onCompare={meta => setCompareBase(meta)}
                 onDelete={handleDeleteSnapshot}
+              />
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {compareBase && (
+              <SnapshotCompare
+                base={compareBase}
+                snapshots={snapshots}
+                currentItems={items}
+                currentProjectName={currentProjectName}
+                loadItems={async meta => (await loadSnapshot(meta)).data.items || []}
+                onClose={() => setCompareBase(null)}
               />
             )}
           </AnimatePresence>

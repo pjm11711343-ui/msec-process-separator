@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { X, Save, History, Lock, RotateCcw, Trash2, FileSpreadsheet, Cloud, HardDrive, ShieldCheck } from 'lucide-react';
+import { X, Save, History, Lock, RotateCcw, Trash2, FileSpreadsheet, Cloud, HardDrive, ShieldCheck, GitCompare } from 'lucide-react';
 import { SnapshotMeta, SNAPSHOT_KIND_LABEL } from '../lib/snapshots';
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
   onSave: (memo: string, name?: string) => Promise<boolean>;
   onRestore: (meta: SnapshotMeta) => void;
   onExport: (meta: SnapshotMeta) => void;
+  onCompare: (meta: SnapshotMeta) => void;
   onDelete: (meta: SnapshotMeta, password: string) => Promise<boolean>;
 }
 
@@ -30,7 +31,7 @@ function fmtDate(ts: number) {
 }
 
 export default function SnapshotManager({
-  currentProjectName, snapshots, hasItems, busy, onClose, onSave, onRestore, onExport, onDelete
+  currentProjectName, snapshots, hasItems, busy, onClose, onSave, onRestore, onExport, onCompare, onDelete
 }: Props) {
   const [memo, setMemo] = useState('');
   const [name, setName] = useState('');
@@ -205,6 +206,14 @@ export default function SnapshotManager({
                           title="이 저장본을 작업 화면으로 불러옵니다 (저장본 자체는 바뀌지 않음)"
                         >
                           <RotateCcw size={12} /> 불러오기
+                        </button>
+                        <button
+                          onClick={() => onCompare(s)}
+                          disabled={busy}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-amber-100 hover:bg-amber-200 text-[#0a1220] text-xs font-bold mr-1 cursor-pointer disabled:opacity-40"
+                          title="이 저장본과 현재 작업(또는 다른 저장본)을 비교해 바뀐 품목을 봅니다"
+                        >
+                          <GitCompare size={12} /> 비교
                         </button>
                         <button
                           onClick={() => onExport(s)}
