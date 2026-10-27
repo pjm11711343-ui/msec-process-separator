@@ -287,6 +287,8 @@ export async function saveProjectToFirestore(project: Project): Promise<void> {
     await setDoc(projectRef, dataToSave, { merge: true });
   } catch (err) {
     handleFirestoreError(err, 'saveProject');
+    // 한도 초과가 아닌 저장 실패는 호출한 쪽에 알려 '저장됨'으로 잘못 표시되지 않게 함
+    if (!isQuotaExceeded) throw err;
   }
 }
 

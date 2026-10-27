@@ -1,8 +1,19 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+    // 저장본(시점별 고정 저장): 새로 만들기·읽기만 허용, 수정 금지 (삭제는 앱에서 관리자 비밀번호 확인 후)
+    match /project_snapshots/{id} {
+      allow read, create, delete: if true;
+      allow update: if false;
+    }
+    match /project_snapshot_data/{id} {
+      allow read, create, delete: if true;
+      allow update: if false;
+    }
+
+    // 그 외 데이터 (현장·세션·규칙·학습 등)
+    match /{col}/{rest=**} {
+      allow read, write: if !(col in ['project_snapshots', 'project_snapshot_data']);
     }
   }
 }

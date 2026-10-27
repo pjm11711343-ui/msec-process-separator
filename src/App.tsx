@@ -7,6 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { SpecItem, ThemeType, Project, CustomClassificationRule, INITIAL_CATEGORIES, SeparationMethod, ProcessCodeEntry } from './types';
 import { applyProcessCodeTable } from './utils/processCodeTable';
 import ProcessCodeManager from './components/ProcessCodeManager';
+import SnapshotManager from './components/SnapshotManager';
+import { SnapshotMeta, SnapshotKind, createSnapshot, subscribeSnapshots, loadSnapshot, deleteSnapshot, isSnapshotCloudOn } from './lib/snapshots';
 import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES, builtInClassify } from './utils/classifier';
 import { SiteLearning, aggregateLearning, learnFromItems, predictCategory, describePrediction } from './utils/learningModel';
 import { exportStyledExcel } from './utils/excelExport';
@@ -47,6 +49,7 @@ import {
   deleteSiteLearningFromFirestore,
   subscribeSiteLearningsFromFirestore,
   isCloudQuotaExceeded,
+  isCloudConfigured,
   onQuotaStateChange
 } from './lib/firebase';
 
@@ -621,6 +624,11 @@ export default function App() {
     processCodes?: ProcessCodeEntry[];
   }>({});
   const [isProcessCodeOpen, setIsProcessCodeOpen] = useState(false);
+  // 저장본 (시점별 고정 저장)
+  const [snapshots, setSnapshots] = useState<SnapshotMeta[]>([]);
+  const [isSnapshotOpen, setIsSnapshotOpen] = useState(false);
+  const [snapshotBusy, setSnapshotBusy] = useState(false);
+  useEffect(() => subscribeSnapshots(setSnapshots), []);
 
   const handleUpdateProjectMetadata = (key: string, value: string) => {
     setProjectMetadata(prev => {
@@ -918,9 +926,53 @@ export default function App() {
       
       // If no explicit share link, subscribe to active cloud session
       if (!loadedShare) {
+        // 시작 시 한 번만 작업 화면을 채움: 이 PC 의 마지막 작업과 클라우드 공용 세션 중
+        // 같은 현장이면 더 최근 것, 다른 현장이면 이 PC 작업을 우선 (다른 PC 작업으로 덮여 초기화되던 문제 방지)
+        let hydrated = false;
+        const readLocalSession = (): any | null => {
+          const saved = safeLocalStorage.getItem(STORAGE_KEY);
+          if (!saved) return null;
+          try {
+            const parsed = JSON.parse(saved);
+            return parsed && Array.isArray(parsed.items) && parsed.items.length > 0 ? parsed : null;
+          } catch (e) {
+            console.error('Failed to parse saved session', e);
+            return null;
+          }
+        };
+        const hydrateFromLocal = (local: any) => {
+          const healed = local.items.map(healItem);
+          const { items: normalized } = normalizeAllItemsSections(healed);
+          setItems(prev => {
+            if (prev.length > 0) return prev;
+            if (local.theme) setTheme(local.theme);
+            if (Array.isArray(local.categories) && local.categories.length > 0) setCategories(local.categories);
+            if (local.categoryEstimates) setCategoryEstimates(local.categoryEstimates);
+            if (local.projectMetadata) setProjectMetadata(local.projectMetadata);
+            if (typeof local.projectName === 'string') setCurrentProjectName(local.projectName);
+            if (local.separationMethod) setSeparationMethod(local.separationMethod);
+            setIsProjectLocked(!!local.isLocked);
+            setTimeout(() => showNotification(`이 PC에서 마지막으로 작업한 내용${local.projectName ? ` (${local.projectName})` : ''}을 불러왔습니다.`, 'info'), 600);
+            return normalized;
+          });
+        };
+
         unsubscribeActiveSession = subscribeActiveSessionFromFirestore(cloudSession => {
-          if (cloudSession && cloudSession.items && cloudSession.items.length > 0) {
-            // If local is currently empty or initial load, auto hydrate from cloud
+          if (hydrated) return;
+          hydrated = true;
+          const local = readLocalSession();
+          const cloudHas = !!(cloudSession && cloudSession.items && cloudSession.items.length > 0);
+          const preferLocal = !!local && (
+            !cloudHas ||
+            (local.projectName || '') !== (cloudSession!.projectName || '') ||
+            (local.timestamp || 0) >= (cloudSession!.updatedAt || 0)
+          );
+
+          if (preferLocal) {
+            hydrateFromLocal(local);
+            return;
+          }
+          if (cloudHas && cloudSession) {
             setItems(prevItems => {
               if (prevItems.length === 0) {
                 if (cloudSession.theme) setTheme(cloudSession.theme);
@@ -944,28 +996,16 @@ export default function App() {
               }
               return prevItems;
             });
-          } else {
-            // Fallback to local session recovery if cloud is empty
-            const saved = safeLocalStorage.getItem(STORAGE_KEY);
-            if (saved) {
-              try {
-                const parsed = JSON.parse(saved);
-                if (parsed.items && parsed.items.length > 0) {
-                  const healed = parsed.items.map(healItem);
-                  const { items: normalized, updatedCount } = normalizeAllItemsSections(healed);
-                  parsed.items = normalized;
-                  if (updatedCount > 0) {
-                    safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-                  }
-                  setPendingSession(parsed);
-                  setIsRecoveryModalOpen(true);
-                }
-              } catch (e) {
-                console.error('Failed to parse saved session', e);
-              }
-            }
           }
         });
+        // 클라우드를 쓰지 않는(로컬 전용) 환경: 구독 콜백이 오지 않으므로 바로 이 PC 작업 복원
+        // (클라우드 한도 초과·오프라인일 때도 4초 안에 응답이 없으면 이 PC 작업으로 복원)
+        setTimeout(() => {
+          if (hydrated) return;
+          hydrated = true;
+          const local = readLocalSession();
+          if (local) hydrateFromLocal(local);
+        }, isCloudConfigured && !isCloudQuotaExceeded() ? 4000 : 0);
       }
     };
 
@@ -1014,11 +1054,14 @@ export default function App() {
         categories,
         categoryEstimates,
         projectMetadata,
+        projectName: currentProjectName,
+        separationMethod,
+        isLocked: isProjectLocked,
         timestamp: Date.now()
       };
       safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
     }
-  }, [items, theme, fontFamily, fontSize, categories, categoryEstimates, projectMetadata]);
+  }, [items, theme, fontFamily, fontSize, categories, categoryEstimates, projectMetadata, currentProjectName, separationMethod, isProjectLocked]);
 
   // Real-time site-specific auto-saving hook (Syncs to Local immediately and Debounced Firestore Cloud)
   useEffect(() => {
@@ -1098,7 +1141,7 @@ export default function App() {
             setLastCloudSyncedTime(new Date().toTimeString().split(' ')[0]);
           })
           .catch(() => {
-            setCloudSyncStatus('synced'); // graceful fallback
+            setCloudSyncStatus('error'); // 클라우드 저장 실패 (이 PC 에는 저장됨)
           })
           .finally(() => {
             setIsAutoSavingIndicator(false);
@@ -1380,6 +1423,8 @@ export default function App() {
       console.warn('Failed to sync completed status to Firestore:', err);
     }
 
+    createSnapshotOf('complete', '내역분리 완료처리', currentProjectName).catch(console.warn);
+
     if (autoLearnOnComplete) {
       const learned = learnSite(targetProject.id, currentProjectName, items, true);
       showNotification(`현장 '${currentProjectName}' 내역분리가 완료되었습니다.${learned > 0 ? ` 분류 ${learned}개 품목을 학습해 다른 현장에 적용합니다.` : ''} (수정 시 비밀번호 필요)`, 'success');
@@ -1431,6 +1476,139 @@ export default function App() {
       showNotification('비밀번호가 일치하지 않습니다. 다시 입력해주세요.', 'error');
     }
   };
+
+  /* ---------------- 저장본 (시점별 고정 저장) ---------------- */
+  const buildSnapshotData = () => ({
+    items: JSON.parse(JSON.stringify(items)) as SpecItem[],
+    categories: [...categories],
+    categoryEstimates: { ...categoryEstimates },
+    projectMetadata: JSON.parse(JSON.stringify(projectMetadata || {})),
+    separationMethod,
+    theme,
+  });
+
+  const createSnapshotOf = async (kind: SnapshotKind, memo: string, projectName: string) => {
+    const projectId = projects.find(p => p.name === projectName)?.id || '';
+    return createSnapshot({ projectId, projectName, memo, kind, data: buildSnapshotData() });
+  };
+
+  /** 저장 버튼: 현장 최신본 저장 + 고정 저장본 생성 */
+  const handleCreateSnapshot = async (memo: string, nameOverride?: string): Promise<boolean> => {
+    if (items.length === 0) {
+      showNotification('저장할 내역 데이터가 없습니다.', 'error');
+      return false;
+    }
+    const name = (nameOverride || currentProjectName || '').trim();
+    if (!name) {
+      setIsSnapshotOpen(true);
+      showNotification('현장명을 입력해야 저장할 수 있습니다.', 'error');
+      return false;
+    }
+    setSnapshotBusy(true);
+    try {
+      await handleSaveProject(name);
+      const { meta, cloud, local } = await createSnapshotOf('manual', memo, name);
+      const time = new Date(meta.createdAt).toTimeString().slice(0, 5);
+      setLastAutoSavedTime(new Date().toTimeString().split(' ')[0]);
+      showNotification(
+        `저장본이 만들어졌습니다 (${name} · ${time}${memo ? ` · ${memo}` : ''}) — ${cloud && local ? '클라우드 + 이 PC' : cloud ? '클라우드' : isSnapshotCloudOn() ? '이 PC (클라우드 저장 실패)' : '이 PC'}에 고정 보관`,
+        cloud || !isSnapshotCloudOn() ? 'success' : 'info'
+      );
+      return true;
+    } catch (e: any) {
+      showNotification(e?.message || '저장본을 만들지 못했습니다.', 'error');
+      return false;
+    } finally {
+      setSnapshotBusy(false);
+    }
+  };
+
+  const applySnapshotData = (meta: SnapshotMeta, data: any) => {
+    const healed = (data.items || []).map(healItem);
+    const { items: normalized } = normalizeAllItemsSections(healed);
+    setItems(normalized);
+    if (data.theme) setTheme(data.theme);
+    if (Array.isArray(data.categories) && data.categories.length > 0) {
+      setCategories(prev => Array.from(new Set([...data.categories, ...prev])));
+    }
+    setCategoryEstimates(data.categoryEstimates || {});
+    setProjectMetadata(data.projectMetadata || {});
+    setSeparationMethod(data.separationMethod || 'method2');
+    setCurrentProjectName(meta.projectName);
+    setIsProjectLocked(false);
+    setWorkbook(null);
+  };
+
+  const handleRestoreSnapshot = (meta: SnapshotMeta) => {
+    const doRestore = async () => {
+      const when = new Date(meta.createdAt).toLocaleString('ko-KR');
+      if (items.length > 0 && !window.confirm(`'${meta.projectName}' ${when} 저장본을 불러옵니다.\n\n지금 화면의 작업은 '불러오기 전 자동' 저장본으로 먼저 보관됩니다. 계속할까요?`)) return;
+      setSnapshotBusy(true);
+      try {
+        const { data, verified } = await loadSnapshot(meta);
+        if (items.length > 0 && currentProjectName) {
+          await createSnapshotOf('before-restore', `${when} 저장본 불러오기 전`, currentProjectName).catch(console.warn);
+        }
+        applySnapshotData(meta, data);
+        setIsSnapshotOpen(false);
+        showNotification(
+          verified
+            ? `저장본을 불러왔습니다 (${meta.projectName} · ${when}). 원본 확인 완료 — 이어서 작업하면 현장 최신본에 자동 저장되고, 저장본은 그대로 유지됩니다.`
+            : `저장본을 불러왔지만 원본 확인(지문)이 일치하지 않습니다. 내용을 확인해 주세요.`,
+          verified ? 'success' : 'error'
+        );
+      } catch (e: any) {
+        showNotification(e?.message || '저장본을 불러오지 못했습니다.', 'error');
+      } finally {
+        setSnapshotBusy(false);
+      }
+    };
+    checkLockAndProceed(() => { doRestore(); });
+  };
+
+  const handleExportSnapshot = async (meta: SnapshotMeta) => {
+    setSnapshotBusy(true);
+    try {
+      const { data } = await loadSnapshot(meta);
+      const d = new Date(meta.createdAt);
+      const p = (n: number) => String(n).padStart(2, '0');
+      await exportStyledExcel({
+        projectName: `${meta.projectName}_저장본_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`,
+        items: data.items || [],
+        categories: data.categories || categories,
+      });
+      showNotification('저장본 엑셀 파일이 다운로드되었습니다.', 'success');
+    } catch (e: any) {
+      showNotification(e?.message || '저장본 엑셀을 만들지 못했습니다.', 'error');
+    } finally {
+      setSnapshotBusy(false);
+    }
+  };
+
+  const handleDeleteSnapshot = async (meta: SnapshotMeta, password: string): Promise<boolean> => {
+    if (password !== '4714') {
+      showNotification('비밀번호가 일치하지 않습니다.', 'error');
+      return false;
+    }
+    await deleteSnapshot(meta);
+    setSnapshots(prev => prev.filter(s => s.id !== meta.id));
+    showNotification('저장본을 삭제했습니다.', 'info');
+    return true;
+  };
+
+  // Ctrl+S: 메모 없이 바로 저장본 만들기
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S' || e.key === 'ㄴ')) {
+        e.preventDefault();
+        if (snapshotBusy) return;
+        if (!currentProjectName) { setIsSnapshotOpen(true); return; }
+        handleCreateSnapshot('');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
 
   const handleDeleteProject = async (id: string) => {
     try {
@@ -1541,7 +1719,7 @@ export default function App() {
     setSeparationMethod('method2');
     setIsProjectLocked(false);
 
-    await saveProjectToFirestore(newProject);
+    await saveProjectToFirestore(newProject).catch(console.warn);
     await saveActiveSessionToFirestore({
       projectName: name.trim(),
       items: [],
@@ -2230,6 +2408,10 @@ export default function App() {
   };
 
   const handleDataLoaded = (newItems: SpecItem[], wb: XLSX.WorkBook, detectedCodes?: ProcessCodeEntry[]) => {
+    // 이미 작업 중인 내역이 있으면 새 파일로 바뀌기 전에 자동 저장본으로 보관
+    if (items.length > 0 && currentProjectName) {
+      createSnapshotOf('before-upload', '엑셀 재업로드 전', currentProjectName).catch(console.warn);
+    }
     // 현장 공종표가 비어 있으면 내역서 집계표에서 찾은 공종표를 자동 등록
     const hasRegistered = (projectMetadata.processCodes || []).length > 0;
     if (!hasRegistered && detectedCodes && detectedCodes.length > 0) {
@@ -2409,10 +2591,10 @@ export default function App() {
               </button>
             ) : (
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/10 text-[9px] font-mono border border-white/15" title="모든 PC 및 기기와 실시간 클라우드 동기화 중">
-                <Cloud size={11} className={cloudSyncStatus === 'syncing' ? 'text-amber-400 animate-spin' : 'text-sky-400'} />
+                <Cloud size={11} className={cloudSyncStatus === 'syncing' ? 'text-amber-400 animate-spin' : (cloudSyncStatus === 'error' ? 'text-rose-400' : 'text-sky-400')} />
                 <span className="text-white/80">클라우드:</span>
-                <span className="text-emerald-400 font-bold">
-                  {cloudSyncStatus === 'syncing' ? '동기화 중...' : (lastCloudSyncedTime ? `동기화됨 (${lastCloudSyncedTime})` : '연결됨')}
+                <span className={cloudSyncStatus === 'error' ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
+                  {cloudSyncStatus === 'syncing' ? '동기화 중...' : cloudSyncStatus === 'error' ? '저장 실패 (이 PC에만 저장됨)' : (lastCloudSyncedTime ? `동기화됨 (${lastCloudSyncedTime})` : '연결됨')}
                 </span>
               </div>
             )}
@@ -2423,12 +2605,12 @@ export default function App() {
               {items.length > 0 && (
                 <>
                   <button 
-                    onClick={handleManualSave}
-                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-[10px] font-bold uppercase rounded border border-emerald-500 text-white transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
-                    title="현재 수동 저장"
+                    onClick={() => setIsSnapshotOpen(true)}
+                    className="px-3 py-1 bg-[#e8a33d] hover:bg-[#f0b456] text-[10px] font-bold uppercase rounded border border-[#e8a33d] text-[#0a1220] transition-colors flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    title="현재 상태를 고정 저장본으로 저장 (Ctrl+S)"
                   >
                     <Save size={12} />
-                    수동 저장
+                    저장{snapshots.filter(s => s.projectName === currentProjectName).length > 0 ? ` · ${snapshots.filter(s => s.projectName === currentProjectName).length}` : ''}
                   </button>
                   <button 
                     onClick={handleShareProject}
@@ -2584,12 +2766,12 @@ export default function App() {
              {items.length > 0 && (
                <>
                  <button 
-                   onClick={handleManualSave}
+                   onClick={() => setIsSnapshotOpen(true)}
                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shadow-lg shadow-emerald-100 text-sm font-bold cursor-pointer"
-                   title="현장 수동 저장"
+                   title="현재 상태를 고정 저장본으로 저장 (Ctrl+S)"
                  >
                    <Save size={16} />
-                   <span>수동 저장</span>
+                   <span>저장</span>
                  </button>
                  <button 
                    onClick={handleShareProject}
@@ -3396,6 +3578,22 @@ export default function App() {
                 <PriceAnalysis items={items} theme={theme} />
               )}
             </motion.div>
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {isSnapshotOpen && (
+              <SnapshotManager
+                currentProjectName={currentProjectName}
+                snapshots={snapshots}
+                hasItems={items.length > 0}
+                busy={snapshotBusy}
+                onClose={() => setIsSnapshotOpen(false)}
+                onSave={handleCreateSnapshot}
+                onRestore={handleRestoreSnapshot}
+                onExport={handleExportSnapshot}
+                onDelete={handleDeleteSnapshot}
+              />
+            )}
           </AnimatePresence>
 
           <AnimatePresence>
