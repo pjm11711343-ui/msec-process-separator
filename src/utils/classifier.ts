@@ -189,19 +189,27 @@ export function isUnitVentDuctPath(path: string): boolean {
   return p.includes('환기덕트') && (p.includes('세대내') || p.includes('단위세대') || p.includes('세대환기덕트'));
 }
 
-export function builtInClassify(item: SpecItem): { category: string; remark: string } | null {
-  if (!item) return null;
-  // 최우선 규칙 (품명·단가와 관계없이 무조건)
-  //  1) 공정 또는 품명·규격에 '안전관리비' → 안전장비류
-  //  2) 공정(상위 공정 포함)이 가설공사 → 가설공사
+/**
+ * 최우선 규칙 (품명·단가와 관계없이 무조건)
+ *  1) 공정 또는 품명·규격에 '안전관리비' → 안전장비류
+ *  2) 공정(상위 공정 포함) 이름에 '가설'(가설공사·가설배관 등) → 가설공사
+ */
+export function forcedCategory(item: Pick<SpecItem, 'name' | 'specification' | 'section'> & { sectionParent?: string }): { category: string; remark: string } | null {
   const secPath = `${item.sectionParent || ''} ${item.section || ''}`.replace(/\s+/g, '');
   const nameSpec = `${item.name || ''} ${item.specification || ''}`.replace(/\s+/g, '');
   if (secPath.includes('안전관리비') || nameSpec.includes('안전관리비')) {
     return { category: '안전장비류', remark: '안전장비류 (안전관리비 — 무조건)' };
   }
-  if (secPath.includes('가설공사')) {
-    return { category: '가설공사', remark: '가설공사 (가설공사 공정 — 무조건)' };
+  if (secPath.includes('가설')) {
+    return { category: '가설공사', remark: '가설공사 (가설 공정 — 무조건)' };
   }
+  return null;
+}
+
+export function builtInClassify(item: SpecItem): { category: string; remark: string } | null {
+  if (!item) return null;
+  const forced = forcedCategory(item);
+  if (forced) return forced;
   if (isDesignChangeItem(item)) {
     return { category: DESIGN_CHANGE_CATEGORY, remark: '설계변경 (수량 0·단가 0원)' };
   }

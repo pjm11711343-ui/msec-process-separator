@@ -10,7 +10,7 @@ import ProcessCodeManager from './components/ProcessCodeManager';
 import SnapshotManager from './components/SnapshotManager';
 import SnapshotCompare from './components/SnapshotCompare';
 import { SnapshotMeta, SnapshotKind, createSnapshot, subscribeSnapshots, loadSnapshot, deleteSnapshot, isSnapshotCloudOn } from './lib/snapshots';
-import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES, builtInClassify } from './utils/classifier';
+import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES, builtInClassify, forcedCategory } from './utils/classifier';
 import { SiteLearning, aggregateLearning, learnFromItems, predictCategory, describePrediction } from './utils/learningModel';
 import { exportStyledExcel } from './utils/excelExport';
 import { healItem } from './utils/costCalculation';
@@ -1857,6 +1857,26 @@ export default function App() {
       showNotification('브라우저 저장 용량이 초과되었습니다. 최신 데이터는 클라우드(Firestore)에 안전하게 저장되지만, 로컬 캐시 저장은 제한됩니다.', 'error');
     }
   }, [isLocalStorageQuotaExceeded]);
+
+  // 최우선 분류(가설 공정 → 가설공사, 안전관리비 → 안전장비류)는 공정을 바꾸거나 현장을 열 때도 자동으로 맞춘다 (잠긴 현장은 그대로)
+  useEffect(() => {
+    if (isProjectLocked || items.length === 0) return;
+    const info = buildSectionDisplayInfo(items);
+    let changed = 0;
+    const next = items.map(item => {
+      const parents = item.sectionParent ?? info.get(item.id)?.parents.join(' › ') ?? '';
+      const f = forcedCategory({ ...item, sectionParent: parents });
+      if (!f || item.category === f.category) return item;
+      changed++;
+      return { ...item, category: f.category, originalCategory: f.category, remark: f.remark, recommendationSource: 'rule' as const };
+    });
+    if (changed > 0) {
+      setItems(next);
+      ensureCategoriesExist(next);
+      showNotification(`가설 공정·안전관리비 ${changed}개 품목의 자재분류를 자동으로 지정했습니다 (가설공사 / 안전장비류).`, 'info');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, isProjectLocked]);
 
   const showNotification = (message: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification({ message, type });
