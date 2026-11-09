@@ -1594,27 +1594,27 @@ export default function DataTable({
                     <div className="flex gap-3 items-center">
                       <div className="flex flex-col items-end border-l border-white/10 pl-2">
                         <span className="text-[7px] text-slate-400 font-bold uppercase leading-none mb-0.5">재료(직접)</span>
-                        <span className="text-blue-300 text-[10px] font-black leading-none">₩{costBreakdown.materialCost.toLocaleString()}</span>
+                        <span className="text-blue-300 text-[10px] font-black leading-none">{costBreakdown.materialCost.toLocaleString()}</span>
                       </div>
                       <div className="flex flex-col items-end border-l border-white/10 pl-2">
                         <span className="text-[7px] text-slate-400 font-bold uppercase leading-none mb-0.5">노무비</span>
-                        <span className="text-amber-200 text-[10px] font-black leading-none">₩{costBreakdown.laborCost.toLocaleString()}</span>
+                        <span className="text-amber-200 text-[10px] font-black leading-none">{costBreakdown.laborCost.toLocaleString()}</span>
                       </div>
                       <div className="flex flex-col items-end border-l border-white/10 pl-2">
                         <span className="text-[7px] text-slate-400 font-bold uppercase leading-none mb-0.5">외주(일괄)</span>
-                        <span className="text-indigo-300 text-[10px] font-black leading-none">₩{costBreakdown.outsourcingCost.toLocaleString()}</span>
+                        <span className="text-indigo-300 text-[10px] font-black leading-none">{costBreakdown.outsourcingCost.toLocaleString()}</span>
                       </div>
                       <div className="flex flex-col items-end border-l border-white/10 pl-2">
                         <span className="text-[7px] text-slate-400 font-bold uppercase leading-none mb-0.5">간접비</span>
-                        <span className="text-orange-300 text-[10px] font-black leading-none">₩{costBreakdown.indirectCost.toLocaleString()}</span>
+                        <span className="text-orange-300 text-[10px] font-black leading-none">{costBreakdown.indirectCost.toLocaleString()}</span>
                       </div>
                       <div className="flex flex-col items-end border-l border-white/10 pl-2">
                         <span className="text-[7px] text-slate-400 font-bold uppercase leading-none mb-0.5">지급자재</span>
-                        <span className="text-emerald-400 text-[10px] font-black leading-none">₩{costBreakdown.clientSuppliedCost.toLocaleString()}</span>
+                        <span className="text-emerald-400 text-[10px] font-black leading-none">{costBreakdown.clientSuppliedCost.toLocaleString()}</span>
                       </div>
                       <div className="flex flex-col items-end border-l border-white/10 pl-2 bg-amber-400/15 px-1.5 py-0.5 rounded border border-amber-400/30">
                         <span className="text-[7px] text-amber-300 font-bold uppercase leading-none mb-0.5">[별도] 안전장비</span>
-                        <span className="text-amber-200 text-[10px] font-black leading-none">₩{costBreakdown.safetyEquipmentCost.toLocaleString()}</span>
+                        <span className="text-amber-200 text-[10px] font-black leading-none">{costBreakdown.safetyEquipmentCost.toLocaleString()}</span>
                       </div>
                     </div>
                   )}
@@ -1625,7 +1625,7 @@ export default function DataTable({
                   costViewType === 'total' ? 'text-amber-300' : 
                   costViewType === 'material' ? 'text-blue-300' : 'text-amber-300'
                 }`} title={costViewType === 'total' ? `총 계약 합계 (안전장비류 ₩${costBreakdown.safetyEquipmentCost.toLocaleString()} 제외)` : undefined}>
-                  ₩{(
+                  {(
                     costViewType === 'total'
                       ? costBreakdown.totalContractAmount
                       : costViewType === 'material'

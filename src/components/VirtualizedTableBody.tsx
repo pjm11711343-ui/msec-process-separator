@@ -125,13 +125,13 @@ const TableRowInner = (props: {
           [분류] {row.catName}
         </div>
         <div className={`w-[182px] shrink-0 text-right font-mono font-bold px-2 text-indigo-200 text-xs ${costViewType === 'material' ? 'bg-blue-600/40' : ''}`}>
-          재: ₩{row.materialTotal.toLocaleString()}
+          재: {row.materialTotal.toLocaleString()}
         </div>
         <div className={`w-[182px] shrink-0 text-right font-mono font-bold px-2 text-indigo-200 text-xs ${costViewType === 'labor' ? 'bg-amber-600/40' : ''}`}>
-          노: ₩{row.laborTotal.toLocaleString()}
+          노: {row.laborTotal.toLocaleString()}
         </div>
         <div className={`w-[198px] shrink-0 text-right font-mono font-black px-2 text-amber-300 text-xs ${costViewType === 'total' ? 'bg-indigo-600/40' : ''}`}>
-          합: ₩{row.total.toLocaleString()}
+          합: {row.total.toLocaleString()}
         </div>
         <div className="w-[604px] shrink-0 text-right font-mono text-[10px] px-4 text-indigo-200">
           {row.count} ITEMS
@@ -200,13 +200,13 @@ const TableRowInner = (props: {
           </div>
         </div>
         <div className={`w-[182px] shrink-0 text-right font-mono font-bold px-2 text-sky-100 text-xs ${costViewType === 'material' ? 'bg-blue-600/40' : ''}`}>
-          재: ₩{row.materialTotal.toLocaleString()}
+          재: {row.materialTotal.toLocaleString()}
         </div>
         <div className={`w-[182px] shrink-0 text-right font-mono font-bold px-2 text-sky-100 text-xs ${costViewType === 'labor' ? 'bg-amber-600/40' : ''}`}>
-          노: ₩{row.laborTotal.toLocaleString()}
+          노: {row.laborTotal.toLocaleString()}
         </div>
         <div className={`w-[198px] shrink-0 text-right font-mono font-black px-2 text-amber-200 text-xs ${costViewType === 'total' ? 'bg-sky-600/40' : ''}`}>
-          합: ₩{row.total.toLocaleString()}
+          합: {row.total.toLocaleString()}
         </div>
         <div className="w-[604px] shrink-0 text-right font-mono text-[10px] px-4 text-sky-100">
           {row.count} ITEMS
@@ -268,27 +268,27 @@ const TableRowInner = (props: {
       </div>
 
       <div className={`w-[84px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-600 text-[length:var(--app-font-size)] ${zr} ${borderCellClass} ${costViewType === 'material' ? 'bg-blue-50/50' : ''}`}>
-        ₩{(item.materialUnitPrice || 0).toLocaleString()}
+        {(item.materialUnitPrice || 0).toLocaleString()}
       </div>
 
       <div className={`w-[98px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-700 text-[length:var(--app-font-size)] ${zr} font-medium ${borderCellClass} ${costViewType === 'material' ? 'bg-blue-50' : ''}`}>
-        ₩{(item.materialAmount || 0).toLocaleString()}
+        {(item.materialAmount || 0).toLocaleString()}
       </div>
 
       <div className={`w-[84px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-600 text-[length:var(--app-font-size)] ${zr} ${borderCellClass} ${costViewType === 'labor' ? 'bg-amber-50/50' : ''}`}>
-        ₩{(item.laborUnitPrice || 0).toLocaleString()}
+        {(item.laborUnitPrice || 0).toLocaleString()}
       </div>
 
       <div className={`w-[98px] h-full shrink-0 flex items-center justify-end px-2 font-mono text-slate-700 text-[length:var(--app-font-size)] ${zr} font-medium ${borderCellClass} ${costViewType === 'labor' ? 'bg-amber-50' : ''}`}>
-        ₩{(item.laborAmount || 0).toLocaleString()}
+        {(item.laborAmount || 0).toLocaleString()}
       </div>
 
       <div className={`w-[88px] h-full shrink-0 flex items-center justify-end px-2 font-mono font-semibold text-slate-900 bg-indigo-50/30 text-[length:var(--app-font-size)] ${zr} ${borderCellClass} ${costViewType === 'total' ? 'bg-indigo-100/50' : ''}`}>
-        ₩{item.unitPrice.toLocaleString()}
+        {item.unitPrice.toLocaleString()}
       </div>
 
       <div className={`w-[110px] h-full shrink-0 flex items-center justify-end px-2 font-mono font-bold text-indigo-600 bg-amber-50/40 text-[length:var(--app-font-size)] ${zr} ${borderCellClass} ${costViewType === 'total' ? 'bg-amber-100/50' : ''}`}>
-        ₩{item.amount.toLocaleString()}
+        {item.amount.toLocaleString()}
       </div>
 
       <div className={`w-[104px] h-full shrink-0 flex items-center px-2 text-slate-500 italic truncate text-[10px] ${borderCellClass} ${zr}`} title={item.remark}>
@@ -340,7 +340,7 @@ const TableRowInner = (props: {
               onClick={() => startEditing(item.id, 'executionAmount', item.executionAmount || 0)}
             >
               <span className={`text-[length:var(--app-font-size)] font-black font-mono ${item.executionAmount ? 'text-amber-600' : 'text-slate-300'}`}>
-                {item.executionAmount ? `₩${item.executionAmount.toLocaleString()}` : '₩0'}
+                {item.executionAmount ? item.executionAmount.toLocaleString() : '0'}
               </span>
             </div>
           )
