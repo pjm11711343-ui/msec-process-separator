@@ -9,6 +9,7 @@ import { applyProcessCodeTable } from './utils/processCodeTable';
 import ProcessCodeManager from './components/ProcessCodeManager';
 import SnapshotManager from './components/SnapshotManager';
 import SnapshotCompare from './components/SnapshotCompare';
+import InstallAppButton from './components/InstallAppButton';
 import { SnapshotMeta, SnapshotKind, createSnapshot, subscribeSnapshots, loadSnapshot, deleteSnapshot, isSnapshotCloudOn } from './lib/snapshots';
 import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES, builtInClassify, forcedCategory } from './utils/classifier';
 import { SiteLearning, aggregateLearning, learnFromItems, predictCategory, describePrediction } from './utils/learningModel';
@@ -2624,6 +2625,7 @@ export default function App() {
           <div className="flex items-center gap-6">
             <div className="text-[11px] opacity-60 font-mono hidden md:block">가동 상태: 정상</div>
             <div className="flex gap-2 items-center">
+              <InstallAppButton variant="dark" onNotify={showNotification} />
               {items.length > 0 && (
                 <>
                   <button 
@@ -2785,6 +2787,7 @@ export default function App() {
         
         {theme && (
           <div className="flex items-center gap-3">
+             <InstallAppButton variant="light" onNotify={showNotification} />
              {items.length > 0 && (
                <>
                  <button 
