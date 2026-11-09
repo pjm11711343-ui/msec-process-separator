@@ -14,7 +14,9 @@ interface Props {
   onRestore: (meta: SnapshotMeta) => void;
   onExport: (meta: SnapshotMeta) => void;
   onCompare: (meta: SnapshotMeta) => void;
-  onDelete: (meta: SnapshotMeta, password: string) => Promise<boolean>;
+  onDelete: (meta: SnapshotMeta) => Promise<boolean>;
+  /** 관리자만 저장본 삭제 가능 */
+  canDelete: boolean;
 }
 
 const KIND_STYLE: Record<string, string> = {
@@ -22,6 +24,7 @@ const KIND_STYLE: Record<string, string> = {
   complete: 'bg-emerald-600 text-white',
   'before-restore': 'bg-slate-200 text-slate-700',
   'before-upload': 'bg-slate-200 text-slate-700',
+  auto: 'bg-sky-100 text-sky-800',
 };
 
 function fmtDate(ts: number) {
@@ -31,13 +34,13 @@ function fmtDate(ts: number) {
 }
 
 export default function SnapshotManager({
-  currentProjectName, snapshots, hasItems, busy, onClose, onSave, onRestore, onExport, onCompare, onDelete
+  currentProjectName, snapshots, hasItems, busy, onClose, onSave, onRestore, onExport, onCompare, onDelete, canDelete
 }: Props) {
   const [memo, setMemo] = useState('');
   const [name, setName] = useState('');
   const [scope, setScope] = useState<'current' | 'all'>(currentProjectName ? 'current' : 'all');
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [password, setPassword] = useState('');
+  const [showAuto, setShowAuto] = useState(true);
   const memoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -45,8 +48,9 @@ export default function SnapshotManager({
   }, []);
 
   const list = useMemo(
-    () => (scope === 'current' && currentProjectName ? snapshots.filter(s => s.projectName === currentProjectName) : snapshots),
-    [snapshots, scope, currentProjectName]
+    () => (scope === 'current' && currentProjectName ? snapshots.filter(s => s.projectName === currentProjectName) : snapshots)
+      .filter(s => showAuto || s.kind !== 'auto'),
+    [snapshots, scope, currentProjectName, showAuto]
   );
 
   const needName = !currentProjectName;
@@ -59,11 +63,8 @@ export default function SnapshotManager({
   };
 
   const handleDelete = async (meta: SnapshotMeta) => {
-    const ok = await onDelete(meta, password);
-    if (ok) {
-      setDeleting(null);
-      setPassword('');
-    }
+    const ok = await onDelete(meta);
+    if (ok) setDeleting(null);
   };
 
   return (
@@ -131,7 +132,7 @@ export default function SnapshotManager({
             </button>
           </div>
           <p className="text-[11px] text-slate-500">
-            Enter 로 바로 저장 · 단축키 <b>Ctrl+S</b> 는 메모 없이 즉시 저장 · 저장본 삭제는 관리자 비밀번호가 필요합니다
+            Enter 로 바로 저장 · 단축키 <b>Ctrl+S</b> 는 메모 없이 즉시 저장 · 작업 중에는 30분마다 자동 저장본이 만들어집니다(최근 10개 보관) · 저장본 삭제는 관리자만 가능
             {!hasItems && <span className="text-rose-600 font-bold"> · 저장할 내역이 없습니다</span>}
           </p>
         </div>
@@ -151,6 +152,10 @@ export default function SnapshotManager({
           >
             전체 현장
           </button>
+          <label className="ml-3 flex items-center gap-1.5 text-slate-500 cursor-pointer select-none">
+            <input type="checkbox" checked={showAuto} onChange={e => setShowAuto(e.target.checked)} className="accent-[#0a1220]" />
+            30분 자동 저장본 표시
+          </label>
           <span className="ml-auto text-slate-400">{list.length}개 저장본</span>
         </div>
 
@@ -185,6 +190,7 @@ export default function SnapshotManager({
                         <span className={`inline-block mt-0.5 px-1.5 py-[1px] rounded text-[10px] font-bold ${KIND_STYLE[s.kind] || KIND_STYLE.manual}`}>
                           {SNAPSHOT_KIND_LABEL[s.kind] || s.kind}
                         </span>
+                        {s.createdBy && <span className="ml-1 text-[11px] text-slate-500">{s.createdBy}</span>}
                       </td>
                       {scope === 'all' && <td className="py-2 pr-2 font-bold whitespace-nowrap">{s.projectName}</td>}
                       <td className="py-2 pr-2 text-slate-700 break-all">{s.memo || <span className="text-slate-300">-</span>}</td>
@@ -223,13 +229,15 @@ export default function SnapshotManager({
                         >
                           <FileSpreadsheet size={12} /> 엑셀
                         </button>
-                        <button
-                          onClick={() => { setDeleting(deleting === s.id ? null : s.id); setPassword(''); }}
-                          className="inline-flex items-center p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
-                          title="삭제 (비밀번호 필요)"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        {canDelete && (
+                          <button
+                            onClick={() => setDeleting(deleting === s.id ? null : s.id)}
+                            className="inline-flex items-center p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
+                            title="삭제 (관리자)"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                     {deleting === s.id && (
@@ -237,15 +245,7 @@ export default function SnapshotManager({
                         <td colSpan={scope === 'all' ? 7 : 6} className="py-2 px-2">
                           <div className="flex items-center gap-2 text-xs">
                             <ShieldCheck size={14} className="text-rose-600" />
-                            <span className="text-rose-700 font-bold">이 저장본을 삭제하려면 관리자 비밀번호를 입력하세요</span>
-                            <input
-                              type="password"
-                              autoFocus
-                              value={password}
-                              onChange={e => setPassword(e.target.value)}
-                              onKeyDown={e => { if (e.key === 'Enter') handleDelete(s); }}
-                              className="w-28 px-2 py-1 rounded border border-rose-300 text-xs"
-                            />
+                            <span className="text-rose-700 font-bold">이 저장본을 삭제할까요? 삭제하면 되돌릴 수 없습니다.</span>
                             <button onClick={() => handleDelete(s)} className="px-2 py-1 rounded bg-rose-600 text-white font-bold cursor-pointer">삭제</button>
                             <button onClick={() => setDeleting(null)} className="px-2 py-1 rounded bg-white border border-slate-200 cursor-pointer">취소</button>
                           </div>

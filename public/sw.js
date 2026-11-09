@@ -25,6 +25,7 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;       // Firebase 등 외부 요청 제외
   if (url.pathname.startsWith('/api/')) return;          // 서버 API 제외
   if (url.pathname.startsWith('/download/')) return;     // 배포 파일은 항상 최신
+  if (url.pathname === '/version.json') return;          // 버전 확인은 항상 서버
 
   if (req.mode === 'navigate') {
     event.respondWith(

@@ -1,19 +1,56 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 저장본(시점별 고정 저장): 새로 만들기·읽기만 허용, 수정 금지 (삭제는 앱에서 관리자 비밀번호 확인 후)
-    match /project_snapshots/{id} {
-      allow read, create, delete: if true;
-      allow update: if false;
-    }
-    match /project_snapshot_data/{id} {
-      allow read, create, delete: if true;
-      allow update: if false;
+
+    // ---------- 공통 ----------
+    function signedIn() { return request.auth != null; }
+    function userDoc(uid) { return /databases/$(database)/documents/app_users/$(uid); }
+    function hasProfile() { return signedIn() && exists(userDoc(request.auth.uid)); }
+    function profile() { return get(userDoc(request.auth.uid)).data; }
+    function activeUser() { return hasProfile() && profile().active == true; }
+    function adminUser() { return activeUser() && profile().role == 'admin'; }
+    function metaDoc() { return /databases/$(database)/documents/app_meta/auth; }
+
+    // ---------- 최초 관리자 등록 여부 (로그인 화면에서 확인) ----------
+    match /app_meta/auth {
+      allow read: if true;
+      // 관리자가 한 명도 없을 때 단 한 번만, 본인을 관리자로 등록
+      allow create: if signedIn() && !exists(metaDoc()) && request.resource.data.adminUid == request.auth.uid;
+      allow update, delete: if false;
     }
 
-    // 그 외 데이터 (현장·세션·규칙·학습 등)
+    // ---------- 직원 계정 ----------
+    match /app_users/{uid} {
+      allow read: if activeUser() || (signedIn() && request.auth.uid == uid);
+      allow create: if adminUser()
+        // 최초 관리자: app_meta/auth 와 같은 일괄 저장으로 본인 문서를 관리자로 생성
+        || (signedIn() && request.auth.uid == uid
+            && !exists(metaDoc())
+            && getAfter(metaDoc()).data.adminUid == uid
+            && request.resource.data.role == 'admin');
+      allow update: if adminUser()
+        // 본인은 마지막 로그인 시각만 기록 가능
+        || (activeUser() && request.auth.uid == uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastLoginAt']));
+      allow delete: if false;
+    }
+
+    // ---------- 저장본: 만들기·읽기만, 수정 금지 / 삭제는 관리자(30분 자동본은 정리용으로 누구나) ----------
+    match /project_snapshots/{id} {
+      allow read, create: if activeUser();
+      allow update: if false;
+      allow delete: if adminUser() || (activeUser() && resource.data.kind == 'auto');
+    }
+    match /project_snapshot_data/{id} {
+      allow read, create: if activeUser();
+      allow update: if false;
+      allow delete: if adminUser() || (activeUser() && resource.data.kind == 'auto');
+    }
+
+    // ---------- 그 외 업무 데이터 (현장·세션·규칙·학습 등): 사용 중인 직원만 ----------
     match /{col}/{rest=**} {
-      allow read, write: if !(col in ['project_snapshots', 'project_snapshot_data']);
+      allow read, write: if activeUser()
+        && !(col in ['app_meta', 'app_users', 'project_snapshots', 'project_snapshot_data']);
     }
   }
 }

@@ -14,6 +14,7 @@ import {
   setLogLevel
 } from 'firebase/firestore';
 import LZString from 'lz-string';
+import { currentUserName } from './currentUser';
 import { Project, SpecItem, CustomClassificationRule, ThemeType, AppConfig, LearnedMapping } from '../types';
 // Firebase 설정은 .env 의 VITE_FIREBASE_* 값에서 읽습니다 (README 참고)
 const env = import.meta.env;
@@ -42,6 +43,8 @@ if (!isCloudConfigured) {
 
 const { firestoreDatabaseId: _dbId, ...firebaseOptions } = config;
 const app = getApps().length === 0 ? initializeApp(firebaseOptions) : getApps()[0];
+export const firebaseApp = app;
+export const firebaseAppOptions = firebaseOptions;
 
 export const db = config.firestoreDatabaseId
   ? getFirestore(app, config.firestoreDatabaseId)
@@ -175,7 +178,8 @@ function serializeItems(items: SpecItem[]): { items?: any[]; itemsCompressed?: s
       excelRowIdx: typeof item.excelRowIdx === 'number' ? item.excelRowIdx : null,
       memo: item.memo || '',
       executionAmount: typeof item.executionAmount === 'number' ? item.executionAmount : 0,
-      ...(typeof item.sectionParent === 'string' ? { sectionParent: item.sectionParent } : {})
+      ...(typeof item.sectionParent === 'string' ? { sectionParent: item.sectionParent } : {}),
+      ...(item.editedBy ? { editedBy: item.editedBy, editedAt: item.editedAt || 0 } : {})
     };
   });
 
@@ -233,7 +237,8 @@ function deserializeItems(data: any): SpecItem[] {
       excelRowIdx: typeof item.excelRowIdx === 'number' ? item.excelRowIdx : undefined,
       memo: item.memo || '',
       executionAmount: Number(item.executionAmount) || 0,
-      ...(typeof item.sectionParent === 'string' ? { sectionParent: item.sectionParent } : {})
+      ...(typeof item.sectionParent === 'string' ? { sectionParent: item.sectionParent } : {}),
+      ...(item.editedBy ? { editedBy: item.editedBy, editedAt: item.editedAt || 0 } : {})
     };
   });
 }
@@ -262,6 +267,7 @@ export async function saveProjectToFirestore(project: Project): Promise<void> {
       },
       categories: project.categories || [],
       updatedAt: project.updatedAt || Date.now(),
+      updatedBy: currentUserName() || project.updatedBy || '',
       status: project.status || 'working',
       categoryEstimates: project.categoryEstimates || {},
       // 현장 기본정보 (착공일·준공일·동수·세대수·층수) 및 집계 방식도 함께 저장
@@ -342,6 +348,7 @@ export function subscribeProjectsFromFirestore(callback: (projects: Project[]) =
             separationMethod: data.separationMethod || 'method2',
             processCodes: Array.isArray(data.processCodes) ? data.processCodes : [],
             updatedAt: data.updatedAt || Date.now(),
+            updatedBy: data.updatedBy || '',
             status: data.status || 'working'
           });
         });

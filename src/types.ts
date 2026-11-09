@@ -18,6 +18,8 @@ export interface SpecItem {
   memo?: string;       // 메모
   executionAmount?: number; // 수기 실행금액
   recommendationSource?: 'ai' | 'history' | 'rule' | 'manual'; // 분류 근거
+  editedBy?: string;   // 마지막으로 직접 수정한 작업자
+  editedAt?: number;   // 마지막 직접 수정 시각
   sectionParent?: string; // 상위 공정 경로 (예: "010104  세대내배관공사 › 01010401  난방배관공사") — 업로드 시 기록
 }
 
@@ -30,6 +32,7 @@ export interface Project {
   categories: string[];
   categoryColors?: Record<string, string>; // Category name -> hex color
   updatedAt: number;
+  updatedBy?: string; // 마지막 저장 작업자
   status?: 'working' | 'completed';
   categoryEstimates?: Record<string, number>; // Manual input quantity/amount per category
   // New project metadata fields

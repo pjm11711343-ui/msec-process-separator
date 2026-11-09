@@ -3,14 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { SpecItem, ThemeType, Project, CustomClassificationRule, INITIAL_CATEGORIES, SeparationMethod, ProcessCodeEntry } from './types';
 import { applyProcessCodeTable } from './utils/processCodeTable';
 import ProcessCodeManager from './components/ProcessCodeManager';
 import SnapshotManager from './components/SnapshotManager';
 import SnapshotCompare from './components/SnapshotCompare';
 import InstallAppButton from './components/InstallAppButton';
-import { SnapshotMeta, SnapshotKind, createSnapshot, subscribeSnapshots, loadSnapshot, deleteSnapshot, isSnapshotCloudOn } from './lib/snapshots';
+import UserMenu from './components/UserMenu';
+import { useAuthUser } from './components/AuthGate';
+import { authEnabled } from './lib/auth';
+import { currentUserName, isCurrentUserAdmin } from './lib/currentUser';
+import { SnapshotMeta, SnapshotKind, createSnapshot, subscribeSnapshots, loadSnapshot, deleteSnapshot, isSnapshotCloudOn, AUTO_SNAPSHOT_KEEP } from './lib/snapshots';
 import { autoClassify, DESIGN_CHANGE_CATEGORY, BUILT_IN_CATEGORIES, builtInClassify, forcedCategory } from './utils/classifier';
 import { SiteLearning, aggregateLearning, learnFromItems, predictCategory, describePrediction } from './utils/learningModel';
 import { exportStyledExcel } from './utils/excelExport';
@@ -30,7 +34,7 @@ import CategoryManager from './components/CategoryManager';
 import SettingsManager from './components/SettingsManager';
 import ProjectSiteManager from './components/ProjectSiteManager';
 import SiteListSidebar from './components/SiteListSidebar';
-import { Settings, FileSpreadsheet, LogOut, ChevronRight, Tags, BarChart3, Download, Share2, Copy, Check, X, Save, Lock, KeySquare, Sliders, Cloud, CheckCircle2, RefreshCw, Menu, Database, AlertCircle, Layers, Brain } from 'lucide-react';
+import { Settings, FileSpreadsheet, LogOut, ChevronRight, Tags, BarChart3, Download, Share2, Copy, Check, X, Save, Lock, KeySquare, Sliders, Cloud, CheckCircle2, RefreshCw, Menu, Database, AlertCircle, Layers, Brain, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   saveProjectToFirestore,
@@ -631,6 +635,10 @@ export default function App() {
   const [isSnapshotOpen, setIsSnapshotOpen] = useState(false);
   const [snapshotBusy, setSnapshotBusy] = useState(false);
   const [compareBase, setCompareBase] = useState<SnapshotMeta | null>(null);
+  const { user: authUser } = useAuthUser();
+  const [unclassifiedBlock, setUnclassifiedBlock] = useState<SpecItem[] | null>(null);
+  const lastAutoSnapshotHashRef = useRef<string>('');
+  const isAdminUser = authUser.role === 'admin';
   useEffect(() => subscribeSnapshots(setSnapshots), []);
 
   const handleUpdateProjectMetadata = (key: string, value: string) => {
@@ -1361,6 +1369,13 @@ export default function App() {
       return;
     }
 
+    // 미분류가 남아 있으면 완료처리하지 않고 목록을 보여줌
+    const unclassified = items.filter(i => i.id !== 'manual-safety-item' && (!(i.category || '').trim() || i.category === '미분류'));
+    if (unclassified.length > 0) {
+      setUnclassifiedBlock(unclassified);
+      return;
+    }
+
     setIsProjectLocked(true);
     setSeparationMethod('method2'); // 공정분리방식 강제 적용
 
@@ -1448,7 +1463,13 @@ export default function App() {
   };
 
   const handleVerifyPassword = () => {
-    if (passwordInput === '4714') {
+    // 로그인 사용: 관리자 계정만 잠금 해제 / 로컬 모드: 기존 비밀번호
+    const allowed = authEnabled ? isCurrentUserAdmin() : passwordInput === '4714';
+    if (!allowed && authEnabled) {
+      showNotification('완료된 현장의 잠금은 관리자만 해제할 수 있습니다.', 'error');
+      return;
+    }
+    if (allowed) {
       setIsProjectLocked(false);
       setIsPasswordModalOpen(false);
       showNotification('비밀번호 인증 성공! 안심 수정 모드가 활성화되었습니다.', 'success');
@@ -1492,7 +1513,7 @@ export default function App() {
 
   const createSnapshotOf = async (kind: SnapshotKind, memo: string, projectName: string) => {
     const projectId = projects.find(p => p.name === projectName)?.id || '';
-    return createSnapshot({ projectId, projectName, memo, kind, data: buildSnapshotData() });
+    return createSnapshot({ projectId, projectName, memo, kind, data: buildSnapshotData(), createdBy: currentUserName() });
   };
 
   /** 저장 버튼: 현장 최신본 저장 + 고정 저장본 생성 */
@@ -1588,9 +1609,9 @@ export default function App() {
     }
   };
 
-  const handleDeleteSnapshot = async (meta: SnapshotMeta, password: string): Promise<boolean> => {
-    if (password !== '4714') {
-      showNotification('비밀번호가 일치하지 않습니다.', 'error');
+  const handleDeleteSnapshot = async (meta: SnapshotMeta): Promise<boolean> => {
+    if (!isCurrentUserAdmin()) {
+      showNotification('저장본 삭제는 관리자만 할 수 있습니다.', 'error');
       return false;
     }
     await deleteSnapshot(meta);
@@ -1612,6 +1633,44 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   });
+
+  // 30분마다 자동 저장본 (내용이 바뀐 경우만, 현장별 최근 10개 보관)
+  const autoSnapshotStateRef = useRef({ items, currentProjectName, isProjectLocked, snapshots });
+  autoSnapshotStateRef.current = { items, currentProjectName, isProjectLocked, snapshots };
+  useEffect(() => {
+    const quickHash = (list: SpecItem[]) => {
+      let h = 0x811c9dc5;
+      for (const it of list) {
+        const s = `${it.id}|${it.category}|${it.section}|${it.quantity}|${it.amount}|${it.memo || ''}`;
+        for (let k = 0; k < s.length; k++) h = Math.imul(h ^ s.charCodeAt(k), 0x01000193);
+      }
+      return `${list.length}:${(h >>> 0).toString(16)}`;
+    };
+    const tick = async () => {
+      const st = autoSnapshotStateRef.current;
+      if (!st.currentProjectName || st.items.length === 0 || st.isProjectLocked) return;
+      const hash = quickHash(st.items);
+      if (!lastAutoSnapshotHashRef.current) { lastAutoSnapshotHashRef.current = hash; return; } // 첫 확인은 기준만 잡음
+      if (hash === lastAutoSnapshotHashRef.current) return;
+      try {
+        await createSnapshotOf('auto', '30분 자동 저장', st.currentProjectName);
+        lastAutoSnapshotHashRef.current = hash;
+        const autos = st.snapshots
+          .filter(s => s.projectName === st.currentProjectName && s.kind === 'auto')
+          .sort((a, b) => b.createdAt - a.createdAt);
+        // 방금 만든 1개 포함 최근 KEEP 개만 남김
+        for (const old of autos.slice(AUTO_SNAPSHOT_KEEP - 1)) await deleteSnapshot(old).catch(() => {});
+      } catch (e) {
+        console.warn('[자동 저장본] 실패', e);
+      }
+    };
+    const first = setTimeout(tick, 60 * 1000);
+    const iv = setInterval(tick, 30 * 60 * 1000);
+    return () => { clearTimeout(first); clearInterval(iv); };
+  }, []);
+
+  // 현장이 바뀌면 자동 저장 기준을 다시 잡음
+  useEffect(() => { lastAutoSnapshotHashRef.current = ''; }, [currentProjectName]);
 
   const handleDeleteProject = async (id: string) => {
     try {
@@ -2034,7 +2093,7 @@ export default function App() {
       }
 
       setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, category: newCategory, remark: newCategory, recommendationSource: 'manual' as const } : item
+        item.id === id ? { ...item, category: newCategory, remark: newCategory, recommendationSource: 'manual' as const, editedBy: currentUserName(), editedAt: Date.now() } : item
       ));
 
       // 1. Classification Recommendation Service: Record this mapping
@@ -2172,7 +2231,7 @@ export default function App() {
         handleAddCategory(newCategory);
       }
       setItems(prev => prev.map(item => 
-        ids.includes(item.id) ? { ...item, category: newCategory, remark: newCategory, recommendationSource: 'manual' as const } : item
+        ids.includes(item.id) ? { ...item, category: newCategory, remark: newCategory, recommendationSource: 'manual' as const, editedBy: currentUserName(), editedAt: Date.now() } : item
       ));
 
       // 1. Classification Recommendation Service: Record mappings for all unique name+spec combos
@@ -2232,7 +2291,7 @@ export default function App() {
     checkLockAndProceed(() => {
       const formatted = formatSectionWithHierarchy(newSection);
       setItems(prev => prev.map(item => 
-        ids.includes(item.id) ? { ...item, section: formatted } : item
+        ids.includes(item.id) ? { ...item, section: formatted, editedBy: currentUserName(), editedAt: Date.now() } : item
       ));
       showNotification(`${ids.length}개 항목의 구간 정보가 '${formatted}'(으)로 수정되었습니다.`, 'success');
     });
@@ -2579,7 +2638,7 @@ export default function App() {
                         setPasswordInput('');
                       }}
                       className="px-1.5 py-0.5 bg-amber-600 hover:bg-amber-500 text-[9px] font-bold rounded text-white transition-colors cursor-pointer"
-                      title="비밀번호(4714)를 입력하여 수정을 허용합니다"
+                      title="관리자 계정으로 잠금을 해제하여 수정을 허용합니다"
                     >
                       잠금해제
                     </button>
@@ -2626,6 +2685,7 @@ export default function App() {
             <div className="text-[11px] opacity-60 font-mono hidden md:block">가동 상태: 정상</div>
             <div className="flex gap-2 items-center">
               <InstallAppButton variant="dark" onNotify={showNotification} />
+              <UserMenu variant="dark" onNotify={showNotification} />
               {items.length > 0 && (
                 <>
                   <button 
@@ -2758,7 +2818,7 @@ export default function App() {
                           setPasswordInput('');
                         }}
                         className="px-2.5 py-0.5 bg-amber-500 hover:bg-amber-600 text-[10px] font-bold rounded-full text-white transition-all shadow-sm cursor-pointer"
-                        title="비밀번호(4714)를 입력하여 수정을 허용합니다"
+                        title="관리자 계정으로 잠금을 해제하여 수정을 허용합니다"
                       >
                         수정하기 (암호)
                       </button>
@@ -2788,6 +2848,7 @@ export default function App() {
         {theme && (
           <div className="flex items-center gap-3">
              <InstallAppButton variant="light" onNotify={showNotification} />
+             <UserMenu variant="light" onNotify={showNotification} />
              {items.length > 0 && (
                <>
                  <button 
@@ -2896,10 +2957,14 @@ export default function App() {
                   </div>
                   <p className="text-xs font-bold text-slate-700">여기는 '내역분리 완료' 보호구역입니다.</p>
                   <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
-                    공정이 완료 마감처리된 현장입니다. 수동 수정을 허용하고 편집하시려면 관리자 비밀번호를 입력하십시오.
+                    {authEnabled
+                      ? (isAdminUser
+                          ? '공정이 완료 마감처리된 현장입니다. 관리자 계정으로 잠금을 해제하고 수정할 수 있습니다.'
+                          : '공정이 완료 마감처리된 현장입니다. 잠금 해제는 관리자 계정만 할 수 있습니다. 관리자에게 요청하세요.')
+                      : '공정이 완료 마감처리된 현장입니다. 수동 수정을 허용하고 편집하시려면 관리자 비밀번호를 입력하십시오.'}
                   </p>
                 </div>
-                <div>
+                {!authEnabled && <div>
                   <label className="block text-[9px] font-black uppercase text-slate-400 mb-2">관리자 비밀번호 (Admin Password)</label>
                   <input
                     autoFocus
@@ -2913,8 +2978,7 @@ export default function App() {
                       theme === 'high-density' ? 'border-[#0a1220] rounded-none focus:bg-[#dde3ec]' : 'border-slate-200 rounded-xl focus:border-indigo-500'
                     }`}
                   />
-                  <p className="mt-2 text-[9px] text-zinc-400 text-center font-mono">가이드: 비밀번호는 '4714' 입니다.</p>
-                </div>
+                </div>}
               </div>
               <div className="px-6 py-4 flex gap-2 bg-slate-50 border-t border-slate-100">
                 <button
@@ -2926,7 +2990,7 @@ export default function App() {
                 >
                   취소(닫기)
                 </button>
-                <button
+                {(!authEnabled || isAdminUser) && <button
                   type="button"
                   onClick={handleVerifyPassword}
                   className={`flex-1 py-2 text-xs font-bold rounded-lg text-white ${
@@ -2934,7 +2998,7 @@ export default function App() {
                   }`}
                 >
                   잠금 해제
-                </button>
+                </button>}
               </div>
             </motion.div>
           </motion.div>
@@ -3618,7 +3682,74 @@ export default function App() {
                 onExport={handleExportSnapshot}
                 onCompare={meta => setCompareBase(meta)}
                 onDelete={handleDeleteSnapshot}
+                canDelete={isAdminUser}
               />
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {unclassifiedBlock && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-sm bg-slate-900/50"
+                onClick={() => setUnclassifiedBlock(null)}
+              >
+                <motion.div
+                  initial={{ scale: 0.97, y: 12 }}
+                  animate={{ scale: 1, y: 0 }}
+                  onClick={e => e.stopPropagation()}
+                  className="w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col text-slate-800"
+                >
+                  <div className="px-6 py-4 bg-[#0a1220] text-white flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-xl bg-rose-500 text-white"><AlertTriangle size={18} /></div>
+                      <div>
+                        <h3 className="font-bold">완료처리할 수 없습니다 — 미분류 {unclassifiedBlock.length.toLocaleString()}건</h3>
+                        <p className="text-xs text-white/60">모든 품목의 카테고리를 지정해야 내역분리 완료처리를 할 수 있습니다.</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setUnclassifiedBlock(null)} className="p-2 rounded-lg hover:bg-white/10 cursor-pointer"><X size={18} /></button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-white shadow-[0_1px_0_#e2e8f0]">
+                        <tr className="text-[11px] text-slate-500">
+                          <th className="px-4 py-2 text-left font-semibold">공정</th>
+                          <th className="px-3 py-2 text-left font-semibold">품명</th>
+                          <th className="px-3 py-2 text-left font-semibold">규격</th>
+                          <th className="px-4 py-2 text-right font-semibold">금액</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {unclassifiedBlock.slice(0, 300).map(it => (
+                          <tr key={it.id} className="border-b border-slate-100">
+                            <td className="px-4 py-1.5 text-[12px] text-slate-500 max-w-[220px] truncate" title={it.section}>{it.section}</td>
+                            <td className="px-3 py-1.5 font-medium">{it.name}</td>
+                            <td className="px-3 py-1.5 text-slate-600">{it.specification}</td>
+                            <td className="px-4 py-1.5 text-right font-mono">{(Number(it.amount) || 0).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {unclassifiedBlock.length > 300 && <p className="py-2 text-center text-xs text-slate-500">외 {(unclassifiedBlock.length - 300).toLocaleString()}건</p>}
+                  </div>
+                  <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex justify-end gap-2">
+                    <button onClick={() => setUnclassifiedBlock(null)} className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-bold cursor-pointer">닫기</button>
+                    <button
+                      onClick={() => {
+                        setUnclassifiedBlock(null);
+                        setActiveTab('list');
+                        setTimeout(() => window.dispatchEvent(new CustomEvent('msec:show-unclassified')), 100);
+                      }}
+                      className="px-4 py-2 rounded-lg bg-[#e8a33d] hover:bg-[#f0b456] text-[#0a1220] text-sm font-bold cursor-pointer"
+                    >
+                      미분류 항목만 보기
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
             )}
           </AnimatePresence>
 

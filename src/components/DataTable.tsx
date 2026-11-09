@@ -210,6 +210,12 @@ export default function DataTable({
   onOpenProcessCodes
 }: Props) {
   const [viewMode, setViewMode] = useState<'process' | 'category' | 'unclassified'>('process');
+  // 완료처리 차단 창의 [미분류 항목만 보기]
+  useEffect(() => {
+    const show = () => setViewMode('unclassified');
+    window.addEventListener('msec:show-unclassified', show);
+    return () => window.removeEventListener('msec:show-unclassified', show);
+  }, []);
   const [costViewType, setCostViewType] = useState<'total' | 'material' | 'labor'>('total');
   const [showAggregated, setShowAggregated] = useState(false);
   const [sectionFilter, setSectionFilter] = useState<string>('all');

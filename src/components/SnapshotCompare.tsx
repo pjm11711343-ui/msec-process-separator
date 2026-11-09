@@ -106,6 +106,8 @@ export default function SnapshotCompare({ base, snapshots, currentItems, current
         '수량(현재)': r.after ? r.after.quantity : '',
         '금액(이전)': r.before ? r.before.amount : '',
         '금액(현재)': r.after ? r.after.amount : '',
+        '수정자': r.after?.editedBy && (!r.before || r.after.editedAt !== r.before.editedAt) ? r.after.editedBy : '',
+        '수정 시각': r.after?.editedAt && (!r.before || r.after.editedAt !== r.before.editedAt) ? new Date(r.after.editedAt).toLocaleString('ko-KR') : '',
       };
     });
     const ws = XLSX.utils.json_to_sheet(data);
@@ -162,7 +164,7 @@ export default function SnapshotCompare({ base, snapshots, currentItems, current
             <div className="min-w-0">
               <h3 className="font-bold text-base">저장본 비교 — {base.projectName}</h3>
               <div className="flex items-center gap-2 text-xs text-white/70 mt-0.5 flex-wrap">
-                <span className="px-2 py-0.5 rounded bg-white/10">기준: {snapLabel(base)}</span>
+                <span className="px-2 py-0.5 rounded bg-white/10">기준: {snapLabel(base)}{base.createdBy ? ` · ${base.createdBy}` : ''}</span>
                 <ArrowRight size={12} />
                 <select
                   value={targetId}
@@ -263,6 +265,7 @@ export default function SnapshotCompare({ base, snapshots, currentItems, current
                       <th className="px-3 py-2 text-left font-semibold">카테고리</th>
                       <th className="px-3 py-2 text-right font-semibold">수량</th>
                       <th className="px-3 py-2 text-right font-semibold">금액</th>
+                      <th className="px-3 py-2 text-left font-semibold">수정자</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -290,6 +293,11 @@ export default function SnapshotCompare({ base, snapshots, currentItems, current
                           <td className="px-3 py-1.5">{cellChange(r, 'category', 'category')}</td>
                           <td className="px-3 py-1.5 text-right font-mono">{cellChange(r, 'quantity', 'quantity')}</td>
                           <td className="px-3 py-1.5 text-right font-mono">{cellChange(r, 'amount', 'amount')}</td>
+                          <td className="px-3 py-1.5 text-[12px] text-slate-600 whitespace-nowrap">
+                            {r.after?.editedBy && r.after.editedAt && (!r.before || r.after.editedAt !== r.before.editedAt)
+                              ? <span title={new Date(r.after.editedAt).toLocaleString('ko-KR')}>{r.after.editedBy}<span className="ml-1 text-slate-400 text-[10px]">{fmtDate(r.after.editedAt)}</span></span>
+                              : <span className="text-slate-300">-</span>}
+                          </td>
                         </tr>
                       );
                     })}

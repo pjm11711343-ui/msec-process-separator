@@ -9,14 +9,18 @@ import LZString from 'lz-string';
 import { db, isCloudConfigured, isCloudQuotaExceeded } from './firebase';
 import { SpecItem, ThemeType, SeparationMethod, ProcessCodeEntry } from '../types';
 
-export type SnapshotKind = 'manual' | 'complete' | 'before-restore' | 'before-upload';
+export type SnapshotKind = 'manual' | 'complete' | 'before-restore' | 'before-upload' | 'auto';
 
 export const SNAPSHOT_KIND_LABEL: Record<SnapshotKind, string> = {
   manual: '수동 저장',
   complete: '완료처리 자동',
   'before-restore': '불러오기 전 자동',
   'before-upload': '재업로드 전 자동',
+  auto: '30분 자동',
 };
+
+/** 30분 자동 저장본은 현장별 최근 개수만 보관 */
+export const AUTO_SNAPSHOT_KEEP = 10;
 
 export interface SnapshotMeta {
   id: string;
@@ -31,6 +35,7 @@ export interface SnapshotMeta {
   totalAmount: number;
   hash: string;
   chunks: number;
+  createdBy?: string;
   where?: { cloud: boolean; local: boolean };
 }
 
@@ -149,6 +154,7 @@ export async function createSnapshot(args: {
   memo: string;
   kind: SnapshotKind;
   data: SnapshotData;
+  createdBy?: string;
 }): Promise<{ meta: SnapshotMeta; cloud: boolean; local: boolean }> {
   // 저장 시점 데이터를 깊은 복사로 고정
   const payloadJson = JSON.stringify(args.data);
@@ -170,6 +176,7 @@ export async function createSnapshot(args: {
     totalAmount: items.reduce((s, i) => s + (Number(i.amount) || 0), 0),
     hash,
     chunks,
+    createdBy: args.createdBy || '',
   };
 
   const local = await idbPut({ id, meta, payload });
@@ -180,6 +187,7 @@ export async function createSnapshot(args: {
       for (let n = 0; n < chunks; n++) {
         await setDoc(doc(db, 'project_snapshot_data', `${id}_${n}`), {
           snapshotId: id,
+          kind: args.kind,
           part: n,
           data: payload.slice(n * CHUNK_CHARS, (n + 1) * CHUNK_CHARS),
         });
